@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  scanner:
+    build:
+      context: .
+      dockerfile: .ops/docker/go/Dockerfile
+    volumes:
+      - .:/go/src/app
+    depends_on:
+      - selenium
+    platform: linux/amd64
+    command: ["sh", "-c", "go build -o scanner ./cmd/main.go && ./scanner"]
+
+  selenium:
+    build:
+      context: .
+      dockerfile: .ops/docker/selenium/Dockerfile
+    platform: linux/amd64
+    ports:
+      - "4444:4444"
