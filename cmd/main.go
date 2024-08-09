@@ -13,6 +13,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	gsh := shutdown.NewGraceful(cancel)
 
+	wg.Add(2)
 	go api.NewApp().Run(ctx, wg)
 	go scanner.NewApp().Run(ctx, wg)
 

@@ -29,25 +29,73 @@ func (s *Scrapper) Scrape() {
 				"--headless",
 			},
 		},
+		"goog:loggingPrefs": map[string]interface{}{
+			"browser":     "ALL",
+			"performance": "ALL",
+		},
 	}
+
 	wd, err := selenium.NewRemote(caps, seleniumURL)
 	if err != nil {
-		log.Fatalf("Error connecting to the WebDriver: %v", err)
+		log.Fatalf("error connecting to the WebDriver: %v", err)
 	}
 	defer wd.Quit()
 
-	// Открыть URL
-	if err := wd.Get("https://melbet-ar1.com/es/live/esports"); err != nil {
-		log.Fatalf("Failed to load page: %s\n", err)
+	if err := wd.SetImplicitWaitTimeout(5 * time.Second); err != nil {
+		log.Fatalf("failed to set implicit wait timeout: %v", err)
 	}
 
-	// Подождать, чтобы страница загрузилась
-	time.Sleep(5 * time.Second)
+	if err := wd.Get("https://melbet-ar1.com/es/live/esports"); err != nil {
+		log.Fatalf("failed to load page: %s\n", err)
+	}
 
-	// Получить заголовок страницы
+	// title
 	title, err := wd.Title()
 	if err != nil {
-		log.Fatalf("Failed to get page title: %s\n", err)
+		log.Fatalf("failed to get page title: %s\n", err)
 	}
-	fmt.Printf("Page title: %s\n", title)
+	fmt.Printf("page title: %s\n", title)
+
+	// description
+	description, err := wd.FindElement(selenium.ByXPATH, `//meta[@name="description"]`)
+	if err != nil {
+		log.Printf("failed to find description: %s\n", err)
+	} else {
+		desc, err := description.GetAttribute("content")
+		if err != nil {
+			log.Printf("failed to get description content: %s\n", err)
+		} else {
+			fmt.Printf("page description: %s\n", desc)
+		}
+	}
+
+	// H1
+	h1Element, err := wd.FindElement(selenium.ByTagName, "h1")
+	if err != nil {
+		log.Printf("failed to find H1 tag: %s\n", err)
+	} else {
+		h1Text, err := h1Element.Text()
+		if err != nil {
+			log.Printf("failed to get H1 text: %s\n", err)
+		} else {
+			fmt.Printf("H1 tag text: %s\n", h1Text)
+		}
+	}
+
+	// html
+	_, err = wd.PageSource()
+	if err != nil {
+		log.Fatalf("failed to get page source: %s\n", err)
+	}
+	fmt.Println("page HTML: received")
+	//fmt.Println(html)
+
+	// logs
+	consoleLogs, err := wd.Log("browser")
+	if err != nil {
+		log.Fatalf("failed to get console logs: %s\n", err)
+	}
+	for _, consoleLog := range consoleLogs {
+		fmt.Printf("console log: %s\n", consoleLog)
+	}
 }

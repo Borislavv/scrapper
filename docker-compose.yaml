@@ -5,12 +5,12 @@ services:
     build:
       context: .
       dockerfile: .ops/docker/go/Dockerfile
-    volumes:
-      - .:/go/src/app
     depends_on:
       - selenium
+      - mongodb
     platform: linux/amd64
-    command: ["go", "run", "./cmd/main.go"]
+#    command: ["sh", "-c", "go build -o scanner ./cmd/main.go && ./scanner"]
+    command: ["sh", "-c", "go run ./cmd/main.go"]
 
   selenium:
     image: seleniarm/standalone-chromium:latest
@@ -18,3 +18,23 @@ services:
     ports:
       - "4444:4444"
     platform: linux/arm64
+    volumes:
+      - selenium-data:/home/seluser
+    environment:
+      - SE_NODE_MAX_SESSIONS=10
+      - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: seo
+      MONGO_INITDB_ROOT_PASSWORD: seo
+
+volumes:
+  mongo-data:
+  selenium-data:

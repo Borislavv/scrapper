@@ -27,14 +27,12 @@ func (s *Scanner) Run(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (s *Scanner) Scan(ctx context.Context) {
-	fmt.Println("start scanning...")
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-s.scheduler.Manage(ctx):
-			fmt.Println("scrapping...")
-			s.scrapper.Scrape()
-		}
-	}
+	fmt.Println("...start scanning...")
+
+	s.scrapper.Scrape()
+
+	//for range s.scheduler.Manage(ctx) {
+	//	fmt.Println("...scrapping...")
+	//	s.scrapper.Scrape()
+	//}
 }
