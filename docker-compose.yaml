@@ -10,12 +10,11 @@ services:
     depends_on:
       - selenium
     platform: linux/amd64
-    command: ["sh", "-c", "go build -o scanner ./cmd/main.go && ./scanner"]
+    command: ["go", "run", "./cmd/main.go"]
 
   selenium:
-    build:
-      context: .
-      dockerfile: .ops/docker/selenium/Dockerfile
-    platform: linux/amd64
+    image: seleniarm/standalone-chromium:latest
+    shm_size: 2g
     ports:
       - "4444:4444"
+    platform: linux/arm64

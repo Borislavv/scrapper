@@ -27,8 +27,6 @@ func (s *Scrapper) Scrape() {
 				"--no-sandbox",
 				"--disable-dev-shm-usage",
 				"--headless",
-				"--disable-gpu",
-				"--remote-debugging-port=9222",
 			},
 		},
 	}
