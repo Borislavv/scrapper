@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: .ops/docker/go/Dockerfile
+    volumes:
+      - .:/app
     depends_on:
       - selenium
       - mongodb
