@@ -9,7 +9,6 @@ services:
       - selenium
       - mongodb
     platform: linux/amd64
-#    command: ["sh", "-c", "go build -o scanner ./cmd/main.go && ./scanner"]
     command: ["sh", "-c", "go run ./cmd/main.go"]
 
   selenium:
