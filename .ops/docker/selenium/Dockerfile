@@ -1,31 +1,35 @@
-FROM openjdk:11-jre-slim
+# Use the Ubuntu 22.04 image as a base
+FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y \
-    wget \
-    unzip \
-    curl \
-    gnupg \
-    && rm -rf /var/lib/apt/lists/*
+# Set environment variables for versions
+ENV SELENIUM_VERSION="4.22.0"
+ENV CHROME_DRIVER_VERSION="127.0.6533.99"
+ENV CHROME_VERSION="latest"
 
-RUN mkdir -p /opt/selenium && \
-    wget -q -O /opt/selenium/selenium-server-standalone.jar https://selenium-release.storage.googleapis.com/3.141/selenium-server-standalone-3.141.59.jar
+# Update the package list and install necessary packages
+RUN apt-get update && \
+    apt-get install -y wget unzip curl xvfb libxi6 libgconf-2-4 openjdk-11-jre
 
-RUN CHROMEDRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE` && \
-    wget -q -O /tmp/chromedriver_linux64.zip http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
-    unzip /tmp/chromedriver_linux64.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver_linux64.zip
+# Download and install Google Chrome
+RUN wget --no-verbose https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    dpkg -i google-chrome-stable_current_amd64.deb || apt-get install -y -f
 
-RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-    dpkg --add-architecture amd64 && \
-    apt-get update && \
-    apt-get install -y ./google-chrome-stable_current_amd64.deb && \
-    rm google-chrome-stable_current_amd64.deb && \
-    apt-get -f install -y && \
-    rm -rf /var/lib/apt/lists/*
+# Clean up
+RUN rm google-chrome-stable_current_amd64.deb
 
-COPY .ops/sh/start_selenium.sh /opt/selenium/start_selenium.sh
-RUN chmod +x /opt/selenium/start_selenium.sh
+# Fetch the latest ChromeDriver version and install it
+RUN CHROME_DRIVER_VERSION=$(wget -qO- https://chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
+    wget --no-verbose https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip -d /usr/local/bin && \
+    rm chromedriver_linux64.zip && \
+    chmod +x /usr/local/bin/chromedriver
 
+# Download and install Selenium Standalone Server
+RUN wget --no-verbose https://github.com/SeleniumHQ/selenium/releases/download/selenium-${SELENIUM_VERSION}/selenium-server-${SELENIUM_VERSION}.jar && \
+    mv selenium-server-${SELENIUM_VERSION}.jar /usr/local/bin/selenium-server-standalone.jar
+
+# Expose port 4444 for Selenium Server
 EXPOSE 4444
 
-ENTRYPOINT ["/opt/selenium/start_selenium.sh"]
+# Run Selenium Standalone Server with ChromeDriver and Chrome
+CMD xvfb-run -a java -jar /usr/local/bin/selenium-server-standalone.jar standalone --port 4444

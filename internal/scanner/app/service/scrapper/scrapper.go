@@ -9,7 +9,7 @@ import (
 
 const (
 	// Адрес Selenium сервера
-	seleniumURL = "http://selenium:4444/wd/hub"
+	seleniumURL = "http://host.docker.internal:4444/wd/hub"
 )
 
 type Scrapper struct {
