@@ -11,6 +11,9 @@ services:
       - selenium
       - mongodb
     platform: linux/amd64
+    environment:
+      URLS_FILEPATH: "/public/data/urls.csv"
+      FREQUENCY: "1h"
     command: ["sh", "-c", "go run ./cmd/main.go"]
 
   selenium:
