@@ -19,12 +19,13 @@ import (
 )
 
 type Spider struct {
+	ctx          context.Context
 	config       spiderinterface.Config
 	jobRunner    runnerinterface.JobRunner
 	jobScheduler schedulerinterface.JobScheduler
 }
 
-func New() *Spider {
+func New(ctx context.Context) *Spider {
 	cfg, err := spiderconfig.Load()
 	if err != nil {
 		panic(err)
@@ -34,7 +35,7 @@ func New() *Spider {
 	pageRepo := pagerepository.New()
 	pageSaver := pagesaver.New(pageRepo)
 	pageFinder := pagefinder.New(pageRepo)
-	pageScrapper := pagescrapper.New()
+	pageScrapper := pagescrapper.New(ctx, cfg)
 	pageComparator := pagecomparator.New()
 	// task dependencies
 	taskProvider := taskprovider.New(cfg)
@@ -50,10 +51,10 @@ func New() *Spider {
 	}
 }
 
-func (s *Spider) Run(ctx context.Context, wg *sync.WaitGroup) {
+func (s *Spider) Run(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	for range s.jobScheduler.Manage(ctx) {
-		s.jobRunner.Run(ctx)
+	for range s.jobScheduler.Manage(s.ctx) {
+		s.jobRunner.Run(s.ctx)
 	}
 }

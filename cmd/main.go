@@ -13,7 +13,7 @@ func main() {
 	gsh := shutdown.NewGraceful(cancel)
 
 	wg.Add(1)
-	go spider.New().Run(ctx, wg)
+	go spider.New(ctx).Run(wg)
 
 	gsh.ListenAndCancel()
 	wg.Wait()

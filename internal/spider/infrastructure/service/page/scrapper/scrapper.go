@@ -2,52 +2,84 @@ package pagescrapper
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	"github.com/tebeka/selenium"
 	"log"
 	"net/url"
+	"runtime"
+	"sync"
 )
 
 const seleniumURL = "http://host.docker.internal:4444/wd/hub"
 
 type PageScrapper struct {
 	config spiderconfiginterface.Config
+	wdPool *sync.Pool
 }
 
-func New(config spiderconfiginterface.Config) *PageScrapper {
-	return &PageScrapper{config: config}
-}
+func New(ctx context.Context, config spiderconfiginterface.Config) *PageScrapper {
+	return &PageScrapper{
+		config: config,
+		wdPool: &sync.Pool{
+			New: func() interface{} {
+				caps := selenium.Capabilities{
+					"browserName": "chrome",
+					"goog:chromeOptions": map[string]interface{}{
+						"args": []string{
+							"--no-sandbox",
+							"--disable-dev-shm-usage",
+							"--headless",
+							"--enable-logging",
+							"--v=1",
+							"--enable-precise-memory-info",
+							"--disable-popup-blocking",
+							"--disable-default-apps",
+							"--remote-debugging-port=9222",
+						},
+					},
+					"goog:loggingPrefs": map[string]interface{}{
+						"browser":     "ALL",
+						"performance": "ALL",
+					},
+				}
 
-func (s *PageScrapper) Scrape(ctx context.Context, url url.URL) (*entity.Page, error) {
-	caps := selenium.Capabilities{
-		"browserName": "chrome",
-		"goog:chromeOptions": map[string]interface{}{
-			"args": []string{
-				"--no-sandbox",
-				"--disable-dev-shm-usage",
-				"--headless",
+				wd, err := selenium.NewRemote(caps, seleniumURL)
+				if err != nil {
+					log.Fatalf("failed to create WebDriver: %v", err)
+				}
+
+				runtime.SetFinalizer(wd, func(w selenium.WebDriver) {
+					if err = w.Quit(); err != nil {
+						log.Println("PageScrapper: " + err.Error())
+					} else {
+						log.Println("PageScrapper: selenium.webDriver closed.")
+					}
+				})
+
+				return wd
 			},
 		},
-		"goog:loggingPrefs": map[string]interface{}{
-			"browser":     "ALL",
-			"performance": "ALL",
-		},
 	}
+}
 
-	wd, err := selenium.NewRemote(caps, seleniumURL)
-	if err != nil {
-		log.Printf("error connecting to the WebDriver: %v\n", err)
-		return nil, err
-	}
-	defer func() { _ = wd.Quit() }()
+type NetworkLog struct {
+	URL             string
+	RequestHeaders  map[string]interface{}
+	ResponseHeaders map[string]interface{}
+	StatusCode      int
+}
 
-	if err = wd.SetImplicitWaitTimeout(s.config.GetTimeoutPerURL()); err != nil {
+func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
+	wd := s.wdPool.Get().(selenium.WebDriver)
+
+	if err := wd.SetImplicitWaitTimeout(s.config.GetTimeoutPerURL()); err != nil {
 		log.Printf("failed to set implicit wait timeout: %v", err)
 		return nil, err
 	}
 
-	if err = wd.Get(url.String()); err != nil {
+	if err := wd.Get(url.String()); err != nil {
 		log.Printf("failed to load page: %s\n", err)
 		return nil, err
 	}
@@ -63,7 +95,7 @@ func (s *PageScrapper) Scrape(ctx context.Context, url url.URL) (*entity.Page, e
 	page.Title = title
 
 	// description
-	descriptionElement, err := wd.FindElement(selenium.ByXPATH, `//meta[@name="description"]`)
+	descriptionElement, err := wd.FindElement(selenium.ByXPATH, "//meta[@name='description']")
 	if err != nil {
 		log.Printf("failed to find description: %s\n", err)
 		return nil, err
@@ -100,15 +132,66 @@ func (s *PageScrapper) Scrape(ctx context.Context, url url.URL) (*entity.Page, e
 	}
 	page.HTML = html
 
-	// logs
+	// Сканирование сети (Network)
+	logs, err := wd.Log("performance")
+	if err != nil {
+		log.Printf("failed to get performance logs: %s\n", err)
+		return nil, err
+	}
+
+	networkLogs := make(map[string]*NetworkLog)
+
+	for _, logEntry := range logs {
+		var message struct {
+			Message struct {
+				Method string                 `json:"method"`
+				Params map[string]interface{} `json:"params"`
+			} `json:"message"`
+		}
+		if err = json.Unmarshal([]byte(logEntry.Message), &message); err != nil {
+			log.Printf("failed to unmarshal log entry: %s\n", err)
+			continue
+		}
+
+		requestID, hasRequestID := message.Message.Params["requestId"].(string)
+		if !hasRequestID {
+			continue
+		}
+
+		switch message.Message.Method {
+		case "Network.requestWillBeSent":
+			request := message.Message.Params["request"].(map[string]interface{})
+			reqUrl := request["url"].(string)
+			headers := request["headers"].(map[string]interface{})
+
+			if _, exists := networkLogs[requestID]; !exists {
+				networkLogs[requestID] = &NetworkLog{}
+			}
+			networkLogs[requestID].URL = reqUrl
+			networkLogs[requestID].RequestHeaders = headers
+
+		case "Network.responseReceived":
+			if _, exists := networkLogs[requestID]; !exists {
+				networkLogs[requestID] = &NetworkLog{}
+			}
+			response := message.Message.Params["response"].(map[string]interface{})
+			headers := response["headers"].(map[string]interface{})
+			status := int(response["status"].(float64))
+
+			networkLogs[requestID].ResponseHeaders = headers
+			networkLogs[requestID].StatusCode = status
+		}
+	}
+
+	// console logs
 	consoleLogs, err := wd.Log("browser")
 	if err != nil {
 		log.Printf("failed to get console logs: %s\n", err)
 		return nil, err
 	}
-	logs := make([]string, 0, len(consoleLogs))
+	logMessages := make([]string, 0, len(consoleLogs))
 	for _, consoleLog := range consoleLogs {
-		logs = append(logs, consoleLog.Message)
+		logMessages = append(logMessages, consoleLog.Message)
 	}
 
 	return page, nil
