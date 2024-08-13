@@ -7,5 +7,5 @@ import (
 )
 
 type TaskRunner interface {
-	Run(ctx context.Context, wg *sync.WaitGroup, url url.URL) error
+	Run(ctx context.Context, wg *sync.WaitGroup, url url.URL)
 }

@@ -1,14 +1,12 @@
 package pagescrapper
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	"github.com/tebeka/selenium"
 	"log"
 	"net/url"
-	"runtime"
 	"sync"
 )
 
@@ -19,7 +17,7 @@ type PageScrapper struct {
 	wdPool *sync.Pool
 }
 
-func New(ctx context.Context, config spiderconfiginterface.Config) *PageScrapper {
+func New(config spiderconfiginterface.Config) *PageScrapper {
 	return &PageScrapper{
 		config: config,
 		wdPool: &sync.Pool{
@@ -47,16 +45,16 @@ func New(ctx context.Context, config spiderconfiginterface.Config) *PageScrapper
 
 				wd, err := selenium.NewRemote(caps, seleniumURL)
 				if err != nil {
-					log.Fatalf("failed to create WebDriver: %v", err)
+					log.Fatalf("failed to create WebDriver: %v\n", err)
 				}
 
-				runtime.SetFinalizer(wd, func(w selenium.WebDriver) {
-					if err = w.Quit(); err != nil {
-						log.Println("PageScrapper: " + err.Error())
-					} else {
-						log.Println("PageScrapper: selenium.webDriver closed.")
-					}
-				})
+				//runtime.SetFinalizer(wd, func(w selenium.WebDriver) {
+				//	if err = w.Quit(); err != nil {
+				//		log.Println("PageScrapper: " + err.Error())
+				//	} else {
+				//		log.Println("PageScrapper: selenium.webDriver closed.")
+				//	}
+				//})
 
 				return wd
 			},
@@ -64,23 +62,16 @@ func New(ctx context.Context, config spiderconfiginterface.Config) *PageScrapper
 	}
 }
 
-type NetworkLog struct {
-	URL             string
-	RequestHeaders  map[string]interface{}
-	ResponseHeaders map[string]interface{}
-	StatusCode      int
-}
-
 func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 	wd := s.wdPool.Get().(selenium.WebDriver)
 
 	if err := wd.SetImplicitWaitTimeout(s.config.GetTimeoutPerURL()); err != nil {
-		log.Printf("failed to set implicit wait timeout: %v", err)
+		log.Printf("PageScrapper: failed to set implicit wait timeout: %v\n", err)
 		return nil, err
 	}
 
 	if err := wd.Get(url.String()); err != nil {
-		log.Printf("failed to load page: %s\n", err)
+		log.Printf("PageScrapper: failed to load page: %s\n", err)
 		return nil, err
 	}
 
@@ -89,7 +80,7 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 	// title
 	title, err := wd.Title()
 	if err != nil {
-		log.Printf("failed to get page title: %s\n", err)
+		log.Printf("PageScrapper: failed to get page title: %s\n", err)
 		return nil, err
 	}
 	page.Title = title
@@ -97,12 +88,12 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 	// description
 	descriptionElement, err := wd.FindElement(selenium.ByXPATH, "//meta[@name='description']")
 	if err != nil {
-		log.Printf("failed to find description: %s\n", err)
+		log.Printf("PageScrapper: failed to find description: %s\n", err)
 		return nil, err
 	} else {
 		description, err := descriptionElement.GetAttribute("content")
 		if err != nil {
-			log.Printf("failed to get description content: %s\n", err)
+			log.Printf("PageScrapper: failed to get description content: %s\n", err)
 			return nil, err
 		} else {
 			page.Description = description
@@ -112,12 +103,12 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 	// H1
 	h1Element, err := wd.FindElement(selenium.ByTagName, "h1")
 	if err != nil {
-		log.Printf("failed to find H1 tag: %s\n", err)
+		log.Printf("PageScrapper: failed to find H1 tag: %s\n", err)
 		return nil, err
 	} else {
 		h1, err := h1Element.Text()
 		if err != nil {
-			log.Printf("failed to get H1 text: %s\n", err)
+			log.Printf("PageScrapper: failed to get H1 text: %s\n", err)
 			return nil, err
 		} else {
 			page.H1 = h1
@@ -127,7 +118,7 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 	// html
 	html, err := wd.PageSource()
 	if err != nil {
-		log.Printf("failed to get page source: %s\n", err)
+		log.Printf("PageScrapper: failed to get page source: %s\n", err)
 		return nil, err
 	}
 	page.HTML = html
@@ -135,11 +126,11 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 	// Сканирование сети (Network)
 	logs, err := wd.Log("performance")
 	if err != nil {
-		log.Printf("failed to get performance logs: %s\n", err)
+		log.Printf("PageScrapper: failed to get performance logs: %s\n", err)
 		return nil, err
 	}
 
-	networkLogs := make(map[string]*NetworkLog)
+	networkLogs := make(map[string]*entity.NetworkLog)
 
 	for _, logEntry := range logs {
 		var message struct {
@@ -149,7 +140,7 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 			} `json:"message"`
 		}
 		if err = json.Unmarshal([]byte(logEntry.Message), &message); err != nil {
-			log.Printf("failed to unmarshal log entry: %s\n", err)
+			log.Printf("PageScrapper: failed to unmarshal log entry: %s\n", err)
 			continue
 		}
 
@@ -165,14 +156,14 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 			headers := request["headers"].(map[string]interface{})
 
 			if _, exists := networkLogs[requestID]; !exists {
-				networkLogs[requestID] = &NetworkLog{}
+				networkLogs[requestID] = &entity.NetworkLog{}
 			}
 			networkLogs[requestID].URL = reqUrl
 			networkLogs[requestID].RequestHeaders = headers
 
 		case "Network.responseReceived":
 			if _, exists := networkLogs[requestID]; !exists {
-				networkLogs[requestID] = &NetworkLog{}
+				networkLogs[requestID] = &entity.NetworkLog{}
 			}
 			response := message.Message.Params["response"].(map[string]interface{})
 			headers := response["headers"].(map[string]interface{})
@@ -186,7 +177,7 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 	// console logs
 	consoleLogs, err := wd.Log("browser")
 	if err != nil {
-		log.Printf("failed to get console logs: %s\n", err)
+		log.Printf("PageScrapper: failed to get console logs: %s\n", err)
 		return nil, err
 	}
 	logMessages := make([]string, 0, len(consoleLogs))

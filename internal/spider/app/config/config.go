@@ -16,6 +16,20 @@ type Config struct {
 	TasksConcurrencyLimit int `envconfig:"TASKS_CONCURRENCY_LIMIT" default:"10"`
 	// TimeoutPerURL is a timeout per request.
 	TimeoutPerURL time.Duration `envconfig:"TIMEOUT_PER_URL" default:"5s"`
+	// MongoHost is a host from docker-compose (mongodb container name).
+	MongoHost string `envconfig:"MONGO_HOST" default:"mongodb"`
+	// MongoPort is an exposed port of mongodb.
+	MongoPort int `envconfig:"MONGO_PORT" default:"27017"`
+	// MongoLogin is a login for simple auth.
+	MongoLogin string `envconfig:"MONGO_LOGIN" default:"seo"`
+	// MongoPassword is a password for simple auth.
+	MongoPassword string `envconfig:"MONGO_PASSWORD" default:"seo"`
+	// MongoDatabase is a name of target mongodb.
+	MongoDatabase string `envconfig:"MONGO_DATABASE" default:"seo"`
+	// MongoPagesCollection is a name of page entities collection.
+	MongoPagesCollection string `envconfig:"MONGO_PAGES_COLLECTION" default:"pages"`
+	// MongoRequestTimeout is a timeout per request to mongodb.
+	MongoRequestTimeout time.Duration `envconfig:"MONGO_REQUEST_TIMEOUT" default:"5s"`
 }
 
 func Load() (*Config, error) {
@@ -44,4 +58,32 @@ func (c *Config) GetTasksConcurrencyLimit() int {
 
 func (c *Config) GetTimeoutPerURL() time.Duration {
 	return c.TimeoutPerURL
+}
+
+func (c *Config) GetMongoHost() string {
+	return c.MongoHost
+}
+
+func (c *Config) GetMongoPort() int {
+	return c.MongoPort
+}
+
+func (c *Config) GetMongoLogin() string {
+	return c.MongoLogin
+}
+
+func (c *Config) GetMongoPassword() string {
+	return c.MongoPassword
+}
+
+func (c *Config) GetMongoDatabase() string {
+	return c.MongoDatabase
+}
+
+func (c *Config) GetMongoPagesCollection() string {
+	return c.MongoPagesCollection
+}
+
+func (c *Config) GetMongoRequestTimeout() time.Duration {
+	return c.MongoRequestTimeout
 }

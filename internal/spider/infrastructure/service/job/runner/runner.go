@@ -2,6 +2,7 @@ package jobrunner
 
 import (
 	"context"
+	"errors"
 	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	taskproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider/interface"
 	taskrunnerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/runner/interface"
@@ -37,18 +38,20 @@ func (s *JobRunner) Run(ctx context.Context) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
-	limiter := rate.NewLimiter(rate.Limit(s.config.GetTasksPerSecondLimit()), s.config.GetTasksConcurrencyLimit())
+	limiter := rate.NewLimiter(
+		rate.Limit(s.config.GetTasksPerSecondLimit()),
+		s.config.GetTasksConcurrencyLimit(),
+	)
 
 	for url := range s.taskProvider.Provide(ctx) {
-		if err := limiter.Wait(nil); err != nil {
-			log.Println("JobRunner: " + err.Error())
+		if err := limiter.Wait(ctx); err != nil {
+			if !(errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled)) {
+				log.Println("JobRunner: " + err.Error())
+			}
 			return
 		}
 
 		wg.Add(1)
-		if err := s.taskRunner.Run(ctx, wg, url); err != nil {
-			log.Println("JobRunner: " + err.Error())
-			continue
-		}
+		go s.taskRunner.Run(ctx, wg, url)
 	}
 }

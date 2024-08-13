@@ -6,21 +6,26 @@ import (
 
 type Page struct {
 	ID             vo.ID    `bson:",inline"`
+	URL            string   `bson:"url"`
 	Title          string   `bson:"title"`
 	Description    string   `bson:"description"`
 	Canonical      string   `bson:"canonical"`
-	H1             string   `bson:"H1"`
+	H1             string   `bson:"р1"`
 	PlainText      string   `bson:"plainText"`
 	HTML           string   `bson:"html"`
-	FAQ            []string `bson:"FAQ"`
+	FAQ            []string `bson:"faq"`
 	RelinkingBlock []string `bson:"relinkingBlock"`
 	HrefLangs      []string `bson:"hrefLangs"`
-	logs           []string `bson:"logs"`
-	network        []string `bson:"network"`
+	Logs           []string `bson:"logs"`
+	Network        []string `bson:"network"`
 }
 
 func (p *Page) GetID() vo.ID {
 	return p.ID
+}
+
+func (p *Page) GetURL() string {
+	return p.URL
 }
 
 func (p *Page) GetTitle() string {
@@ -60,9 +65,9 @@ func (p *Page) GetHTML() string {
 }
 
 func (p *Page) GetLogs() []string {
-	return p.logs
+	return p.Logs
 }
 
 func (p *Page) GetNetwork() []string {
-	return p.network
+	return p.Network
 }

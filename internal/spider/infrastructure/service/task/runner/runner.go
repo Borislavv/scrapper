@@ -34,36 +34,31 @@ func New(
 	}
 }
 
-func (r *TaskRunner) Run(ctx context.Context, wg *sync.WaitGroup, url url.URL) error {
+func (r *TaskRunner) Run(ctx context.Context, wg *sync.WaitGroup, url url.URL) {
 	defer wg.Done()
 
-	cur, err := r.scrapper.Scrape(ctx, url)
+	cur, err := r.scrapper.Scrape(url)
 	if err != nil {
 		log.Println("TaskRunner: " + err.Error())
-		return err
 	}
 
-	prev, err := r.finder.FindByURL(url)
+	prev, err := r.finder.FindByURL(ctx, url)
 	if err != nil {
 		if errors.Is(err, pagerepositoryinterface.NotFoundError) {
-			if err = r.saver.Save(cur); err != nil {
+			if err = r.saver.Save(ctx, cur); err != nil {
 				log.Println("TaskRunner: " + err.Error())
-				return err
 			}
 			log.Println("TaskRunner: saving: page was saved at first time.")
-			return nil
+			return
 		}
 
 		log.Println("TaskRunner: " + err.Error())
-		return err
+		return
 	}
 
 	if !r.comparator.IsEquals(cur, prev) {
-		if err = r.saver.Save(cur); err != nil {
+		if err = r.saver.Save(ctx, cur); err != nil {
 			log.Println("TaskRunner: " + err.Error())
-			return err
 		}
 	}
-
-	return nil
 }
