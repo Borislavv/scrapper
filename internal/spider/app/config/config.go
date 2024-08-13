@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	// URLsFilepath is an additional path to file with URLs.
-	URLsFilepath string `envconfig:"URLS_FILEPATH" default:"/public/data/urls.csv"`
+	URLsFilepath string `envconfig:"URLS_FILEPATH" default:"/public/data/urls_test.csv"`
 	// JobFrequency is an interval between jobs running (interval between spider execution).
 	JobFrequency time.Duration `envconfig:"JOB_FREQUENCY" default:"1h"`
 	// TasksPerSecondLimit indicates how many tasks will be processed ber one second.
@@ -15,7 +15,7 @@ type Config struct {
 	// TasksConcurrencyLimit indicates how many tasks will be processed at the same time.
 	TasksConcurrencyLimit int `envconfig:"TASKS_CONCURRENCY_LIMIT" default:"10"`
 	// TimeoutPerURL is a timeout per request.
-	TimeoutPerURL time.Duration `envconfig:"TIMEOUT_PER_URL" default:"5s"`
+	TimeoutPerURL time.Duration `envconfig:"TIMEOUT_PER_URL" default:"1m"`
 	// MongoHost is a host from docker-compose (mongodb container name).
 	MongoHost string `envconfig:"MONGO_HOST" default:"mongodb"`
 	// MongoPort is an exposed port of mongodb.

@@ -58,8 +58,11 @@ func (r *TaskRunner) Run(ctx context.Context, wg *sync.WaitGroup, url *url.URL) 
 	}
 
 	if !r.comparator.IsEquals(cur, prev) {
+		log.Println("blinking detected for url: " + cur.URL)
 		if err = r.saver.Save(ctx, cur); err != nil {
 			log.Println("TaskRunner: " + err.Error())
 		}
+	} else {
+		log.Println("pages are equal for url: " + cur.URL)
 	}
 }

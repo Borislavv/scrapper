@@ -15,10 +15,9 @@ services:
     environment:
       URLS_FILEPATH: "/public/data/urls.csv"
       FREQUENCY: "1h"
-    command: ["sh", "-c", "go run ./cmd/main.go"]
 
   selenium:
-    image: seleniarm/standalone-chromium:latest
+    image: seleniarm/standalone-chromium:124.0-chromedriver-124.0-20240427
     container_name: selenium
     shm_size: 2g
     ports:

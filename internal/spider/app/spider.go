@@ -20,6 +20,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
 	"sync"
 )
 
@@ -75,6 +76,8 @@ func New(ctx context.Context) *Spider {
 	jobRunner := jobrunner.New(cfg, taskRunner, taskProvider)
 	jobScheduler := jobscheduler.New(cfg)
 
+	log.Println("spider is ready")
+
 	return &Spider{
 		ctx:          ctx,
 		config:       cfg,
@@ -87,6 +90,8 @@ func (s *Spider) Run(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for range s.jobScheduler.Manage(s.ctx) {
+		log.Println("starting a new job")
 		s.jobRunner.Run(s.ctx)
+		log.Println("finished a job")
 	}
 }

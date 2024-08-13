@@ -2,72 +2,51 @@ package pagescrapper
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	"github.com/tebeka/selenium"
+	"github.com/tebeka/selenium/chrome"
 	"log"
 	"net/url"
-	"runtime"
-	"sync"
 )
 
 const seleniumURL = "http://host.docker.internal:4444/wd/hub"
 
 type PageScrapper struct {
 	config spiderconfiginterface.Config
-	wdPool *sync.Pool
 }
 
 func New(config spiderconfiginterface.Config) *PageScrapper {
-	return &PageScrapper{
-		config: config,
-		wdPool: &sync.Pool{
-			New: func() interface{} {
-				caps := selenium.Capabilities{
-					"browserName": "chrome",
-					"goog:chromeOptions": map[string]interface{}{
-						"args": []string{
-							"--no-sandbox",
-							"--disable-dev-shm-usage",
-							"--headless",
-							"--enable-logging",
-							"--v=1",
-							"--enable-precise-memory-info",
-							"--disable-popup-blocking",
-							"--disable-default-apps",
-							"--remote-debugging-port=9222",
-							"--user-agent=Chrome/118.0.5993.70 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
-						},
-					},
-					"goog:loggingPrefs": map[string]interface{}{
-						"browser":     "ALL",
-						"performance": "ALL",
-					},
-				}
-
-				wd, err := selenium.NewRemote(caps, seleniumURL)
-				if err != nil {
-					log.Println("PageScrapper: " + err.Error())
-					return nil
-				}
-
-				runtime.SetFinalizer(wd, func(w selenium.WebDriver) {
-					if err = w.Quit(); err != nil {
-						log.Println("PageScrapper: " + err.Error())
-					}
-				})
-
-				return wd
-			},
-		},
-	}
+	return &PageScrapper{config: config}
 }
 
 func (s *PageScrapper) Scrape(url *url.URL) (*entity.Page, error) {
-	wd, ok := s.wdPool.Get().(selenium.WebDriver)
-	if !ok {
-		err := errors.New("cast to selenium.WebDriver failed (probably selenium.WebDriver creation failed)")
+	chromeOptions := chrome.Capabilities{
+		Args: []string{
+			"--no-sandbox",
+			"--disable-dev-shm-usage",
+			"--enable-logging",
+			"--v=1",
+			"--enable-precise-memory-info",
+			"--disable-popup-blocking",
+			"--disable-default-apps",
+			"--remote-debugging-port=9222",
+			"--user-agent=Chrome/118.0.5993.70 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+		},
+		W3C: true,
+	}
+
+	caps := selenium.Capabilities{
+		"browserName":        "chrome",
+		"goog:chromeOptions": chromeOptions,
+		"goog:loggingPrefs": map[string]interface{}{
+			"browser":     "ALL",
+			"performance": "ALL",
+		},
+	}
+
+	wd, err := selenium.NewRemote(caps, seleniumURL)
+	if err != nil {
 		log.Println("PageScrapper: " + err.Error())
 		return nil, err
 	}
