@@ -34,7 +34,7 @@ func New(
 	}
 }
 
-func (r *TaskRunner) Run(ctx context.Context, wg *sync.WaitGroup, url url.URL) {
+func (r *TaskRunner) Run(ctx context.Context, wg *sync.WaitGroup, url *url.URL) {
 	defer wg.Done()
 
 	cur, err := r.scrapper.Scrape(url)

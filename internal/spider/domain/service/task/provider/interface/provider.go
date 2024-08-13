@@ -6,5 +6,5 @@ import (
 )
 
 type TaskProvider interface {
-	Provide(ctx context.Context) <-chan url.URL
+	Provide(ctx context.Context) <-chan *url.URL
 }

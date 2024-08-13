@@ -15,6 +15,6 @@ func New(repository pagerepositoryinterface.PageRepository) *PageFinder {
 	return &PageFinder{repository: repository}
 }
 
-func (f *PageFinder) FindByURL(ctx context.Context, url url.URL) (*entity.Page, error) {
+func (f *PageFinder) FindByURL(ctx context.Context, url *url.URL) (*entity.Page, error) {
 	return f.repository.FindByURL(ctx, url)
 }

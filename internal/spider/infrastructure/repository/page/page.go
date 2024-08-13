@@ -26,7 +26,7 @@ func New(config spiderconfiginterface.Config, mongodb *mongo.Database) *PageRepo
 	}
 }
 
-func (r *PageRepository) FindByURL(ctx context.Context, url url.URL) (*entity.Page, error) {
+func (r *PageRepository) FindByURL(ctx context.Context, url *url.URL) (*entity.Page, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.config.GetMongoRequestTimeout())
 	defer cancel()
 
@@ -37,7 +37,7 @@ func (r *PageRepository) FindByURL(ctx context.Context, url url.URL) (*entity.Pa
 	page := &entity.Page{}
 	if err := r.collection.FindOne(ctx, filter).Decode(page); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, err
+			return nil, pagerepositoryinterface.NotFoundError
 		}
 		log.Println("PageRepository: " + err.Error())
 		return nil, err

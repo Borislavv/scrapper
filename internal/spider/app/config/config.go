@@ -21,9 +21,9 @@ type Config struct {
 	// MongoPort is an exposed port of mongodb.
 	MongoPort int `envconfig:"MONGO_PORT" default:"27017"`
 	// MongoLogin is a login for simple auth.
-	MongoLogin string `envconfig:"MONGO_LOGIN" default:"seo"`
+	MongoLogin string `envconfig:"MONGO_LOGIN" default:"useo"`
 	// MongoPassword is a password for simple auth.
-	MongoPassword string `envconfig:"MONGO_PASSWORD" default:"seo"`
+	MongoPassword string `envconfig:"MONGO_PASSWORD" default:"pseo"`
 	// MongoDatabase is a name of target mongodb.
 	MongoDatabase string `envconfig:"MONGO_DATABASE" default:"seo"`
 	// MongoPagesCollection is a name of page entities collection.

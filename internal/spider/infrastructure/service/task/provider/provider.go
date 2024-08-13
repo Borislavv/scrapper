@@ -23,20 +23,20 @@ func New(config spiderinterface.Config, parser taskparserinterface.TaskParser) *
 }
 
 // Provide is a method that provides tasks to perform (manages the rate of goroutines creation).
-func (p *TaskProvider) Provide(ctx context.Context) <-chan url.URL {
-	ch := make(chan url.URL, runtime.NumCPU())
+func (p *TaskProvider) Provide(ctx context.Context) <-chan *url.URL {
+	URLsCh := make(chan *url.URL, runtime.NumCPU())
 
 	go func() {
-		defer close(ch)
+		defer close(URLsCh)
 
-		for {
+		for _, URL := range p.URLs {
 			select {
 			case <-ctx.Done():
 				return
-			case ch <- url.URL{}:
+			case URLsCh <- URL:
 			}
 		}
 	}()
 
-	return ch
+	return URLsCh
 }

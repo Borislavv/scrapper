@@ -6,5 +6,5 @@ import (
 )
 
 type PageScrapper interface {
-	Scrape(url url.URL) (*entity.Page, error)
+	Scrape(url *url.URL) (*entity.Page, error)
 }

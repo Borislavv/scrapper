@@ -13,6 +13,6 @@ var (
 )
 
 type PageRepository interface {
-	FindByURL(ctx context.Context, url url.URL) (*entity.Page, error)
+	FindByURL(ctx context.Context, url *url.URL) (*entity.Page, error)
 	Save(ctx context.Context, page *entity.Page) error
 }

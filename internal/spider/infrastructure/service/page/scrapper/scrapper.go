@@ -2,11 +2,13 @@ package pagescrapper
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	"github.com/tebeka/selenium"
 	"log"
 	"net/url"
+	"runtime"
 	"sync"
 )
 
@@ -45,16 +47,15 @@ func New(config spiderconfiginterface.Config) *PageScrapper {
 
 				wd, err := selenium.NewRemote(caps, seleniumURL)
 				if err != nil {
-					log.Fatalf("failed to create WebDriver: %v\n", err)
+					log.Println("PageScrapper: " + err.Error())
+					return nil
 				}
 
-				//runtime.SetFinalizer(wd, func(w selenium.WebDriver) {
-				//	if err = w.Quit(); err != nil {
-				//		log.Println("PageScrapper: " + err.Error())
-				//	} else {
-				//		log.Println("PageScrapper: selenium.webDriver closed.")
-				//	}
-				//})
+				runtime.SetFinalizer(wd, func(w selenium.WebDriver) {
+					if err = w.Quit(); err != nil {
+						log.Println("PageScrapper: " + err.Error())
+					}
+				})
 
 				return wd
 			},
@@ -62,8 +63,13 @@ func New(config spiderconfiginterface.Config) *PageScrapper {
 	}
 }
 
-func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
-	wd := s.wdPool.Get().(selenium.WebDriver)
+func (s *PageScrapper) Scrape(url *url.URL) (*entity.Page, error) {
+	wd, ok := s.wdPool.Get().(selenium.WebDriver)
+	if !ok {
+		err := errors.New("cast to selenium.WebDriver failed (probably selenium.WebDriver creation failed)")
+		log.Println("PageScrapper: " + err.Error())
+		return nil, err
+	}
 
 	if err := wd.SetImplicitWaitTimeout(s.config.GetTimeoutPerURL()); err != nil {
 		log.Printf("PageScrapper: failed to set implicit wait timeout: %v\n", err)
@@ -75,7 +81,9 @@ func (s *PageScrapper) Scrape(url url.URL) (*entity.Page, error) {
 		return nil, err
 	}
 
-	page := &entity.Page{}
+	page := &entity.Page{
+		URL: url.String(),
+	}
 
 	// title
 	title, err := wd.Title()

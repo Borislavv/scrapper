@@ -37,14 +37,15 @@ func (p *TaskParser) ParseURLs() ([]*url.URL, error) {
 		return nil, err
 	}
 
-	rawURLs := make([]string, len(records))
+	rawURLs := make([]string, 0, len(records))
 	for _, record := range records {
 		if len(record) > 0 {
 			rawURLs = append(rawURLs, record[0])
+			continue
 		}
 	}
 
-	URLs := make([]*url.URL, len(rawURLs))
+	URLs := make([]*url.URL, 0, len(rawURLs))
 	for _, rawURL := range rawURLs {
 		URL, err := url.Parse(rawURL)
 		if err != nil {
