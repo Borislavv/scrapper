@@ -40,6 +40,7 @@ func (r *TaskRunner) Run(ctx context.Context, wg *sync.WaitGroup, url *url.URL) 
 	cur, err := r.scrapper.Scrape(url)
 	if err != nil {
 		log.Println("TaskRunner: " + err.Error())
+		return
 	}
 
 	prev, err := r.finder.FindByURL(ctx, url)

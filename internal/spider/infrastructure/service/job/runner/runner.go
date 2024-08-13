@@ -53,6 +53,5 @@ func (s *JobRunner) Run(ctx context.Context) {
 
 		wg.Add(1)
 		go s.taskRunner.Run(ctx, wg, url)
-		break
 	}
 }

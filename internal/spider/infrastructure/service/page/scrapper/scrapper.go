@@ -37,6 +37,7 @@ func New(config spiderconfiginterface.Config) *PageScrapper {
 							"--disable-popup-blocking",
 							"--disable-default-apps",
 							"--remote-debugging-port=9222",
+							"--user-agent=Chrome/118.0.5993.70 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
 						},
 					},
 					"goog:loggingPrefs": map[string]interface{}{
