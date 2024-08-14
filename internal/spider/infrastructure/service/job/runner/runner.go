@@ -2,11 +2,10 @@ package jobrunner
 
 import (
 	"context"
-	"errors"
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
 	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	taskproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider/interface"
 	taskrunnerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/runner/interface"
-	"golang.org/x/time/rate"
 	"log"
 	"sync"
 	"time"
@@ -38,18 +37,18 @@ func (s *JobRunner) Run(ctx context.Context) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
-	limiter := rate.NewLimiter(
-		rate.Limit(s.config.GetTasksPerSecondLimit()),
-		s.config.GetTasksConcurrencyLimit(),
-	)
+	//limiter := rate.NewLimiter(
+	//	rate.Limit(s.config.GetTasksPerSecondLimit()),
+	//	s.config.GetTasksConcurrencyLimit(),
+	//)
+
+	ticker, cancel := util.NewTicker(ctx, time.Second*10)
+	defer cancel()
 
 	for url := range s.taskProvider.Provide(ctx) {
-		if err := limiter.Wait(ctx); err != nil {
-			if !(errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled)) {
-				log.Println("JobRunner: " + err.Error())
-			}
-			return
-		}
+		<-ticker
+
+		log.Println("processing url: " + url.String())
 
 		wg.Add(1)
 		go s.taskRunner.Run(ctx, wg, url)
