@@ -25,8 +25,9 @@ type Config struct {
 	// TimeoutPerURL is a timeout per request.
 	TimeoutPerURL time.Duration `envconfig:"TIMEOUT_PER_URL" default:"1m"`
 	UserAgents    UserAgents    `envconfig:"USER_AGENTS" default:"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko)|Chrome/118.0.5993.70 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"`
+	//UserAgents UserAgents `envconfig:"USER_AGENTS" default:"Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko)"`
 	//UserAgents UserAgents `envconfig:"USER_AGENTS" default:"Chrome/118.0.5993.70 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"`
-	// RequestRetries is a value that is used to determine the number of repetitions of the request if an error occurs.
+	//RequestRetries is a value that is used to determine the number of repetitions of the request if an error occurs.
 	RequestRetries int `envconfig:"REQUEST_RETRIES" default:"3"`
 	// MongoPagesCollection is a name of page entities collection.
 	MongoPagesCollection string `envconfig:"MONGO_PAGES_COLLECTION" default:"pages"`

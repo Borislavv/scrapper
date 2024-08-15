@@ -4,10 +4,13 @@ import (
 	"context"
 	spider "github.com/Borislavv/scrapper/internal/spider/app"
 	"log"
+	"runtime"
 	"sync"
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
 	//gsh := shutdown.NewGraceful(cancel)
@@ -19,7 +22,10 @@ func main() {
 	}
 
 	wg.Add(1)
-	go s.Run(wg)
+	go func() {
+		defer wg.Done()
+		s.Start()
+	}()
 
 	//gsh.ListenAndCancel()
 

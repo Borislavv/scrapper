@@ -11,11 +11,12 @@ type Config struct {
 	// LoggerLevel: /dev/null/, stdout, or path to file (logs will store in the {projectRoot}/var/log dir.).
 	LoggerOutput string `envconfig:"LOGGER_OUTPUT" default:"stdout"`
 	// LoggerFormatter: text, json.
-	LoggerFormatter string `envconfig:"LOGGER_FORMAT" default:"json"`
+	LoggerFormatter string `envconfig:"LOGGER_FORMAT" default:"text"`
 	// LoggerReportCaller determines whether the call function and code line writes into log.
 	LoggerReportCaller bool `envconfig:"LOGGER_REPORT_CALLER" default:"true"`
 	// LoggerContextExtraFields determines which fields must be extract from context.Context and passed into log record.
 	LoggerContextExtraFields []string `envconfig:"LOGGER_CONTEXT_EXTRA_FIELD" default:"JOB_ID,TASK_ID"`
+
 	// MongoHost is a host from docker-compose (mongodb container name).
 	MongoHost string `envconfig:"MONGO_HOST" default:"mongodb"`
 	// MongoPort is an exposed port of mongodb.

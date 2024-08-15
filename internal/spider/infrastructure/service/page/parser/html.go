@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/vo"
 	pagescannerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/interface"
 	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
+	"time"
 )
 
 type HTML struct {
@@ -29,7 +31,14 @@ func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, er
 		}
 	}
 
-	page := &entity.Page{}
+	page := &entity.Page{
+		URL:       resp.Request.URL.String(),
+		UserAgent: resp.Request.UserAgent(),
+		Timestamp: vo.Timestamp{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		},
+	}
 
 	// query for "title"
 	page.Title = doc.Find("title").Text()

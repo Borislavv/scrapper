@@ -7,7 +7,6 @@ import (
 	taskproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider/interface"
 	"github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"net/url"
-	"runtime"
 )
 
 type Parallel struct {
@@ -33,7 +32,7 @@ func NewParallel(
 
 // Provide is a method that sends tasks to perform.
 func (p *Parallel) Provide(ctx context.Context) chan *url.URL {
-	urlsCh := make(chan *url.URL, runtime.NumCPU())
+	urlsCh := make(chan *url.URL, 1)
 
 	go func() {
 		defer close(urlsCh)

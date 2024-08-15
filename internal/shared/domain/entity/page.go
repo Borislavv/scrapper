@@ -7,6 +7,7 @@ import (
 type Page struct {
 	vo.ID          `bson:",inline"`
 	URL            string              `bson:"url"`
+	UserAgent      string              `bson:"userAgent"`
 	Title          string              `bson:"title"`
 	Description    string              `bson:"description"`
 	Canonical      string              `bson:"canonical"`

@@ -8,11 +8,11 @@ import (
 )
 
 type Parallel struct {
-	runner taskrunnerinterface.TaskRunner
+	taskRunner taskrunnerinterface.TaskRunner
 }
 
-func NewParallel(runner taskrunnerinterface.TaskRunner) *Parallel {
-	return &Parallel{runner: runner}
+func NewParallel(taskRunner taskrunnerinterface.TaskRunner) *Parallel {
+	return &Parallel{taskRunner: taskRunner}
 }
 
 func (c *Parallel) Consume(ctx context.Context, urlsCh <-chan *url.URL) {
@@ -35,7 +35,7 @@ func (c *Parallel) Consume(ctx context.Context, urlsCh <-chan *url.URL) {
 		wg.Add(1)
 		go func(u *url.URL) {
 			defer wg.Done()
-			c.runner.Run(ctx, u)
+			c.taskRunner.Run(ctx, u)
 		}(u)
 	}
 }

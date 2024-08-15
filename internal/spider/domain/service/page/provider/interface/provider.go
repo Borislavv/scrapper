@@ -7,5 +7,5 @@ import (
 )
 
 type Provider interface {
-	Provide(ctx context.Context, url *url.URL) (resultCh chan scannerdtointerface.Result)
+	Provide(ctx context.Context, url *url.URL, resultCh chan<- scannerdtointerface.Result)
 }

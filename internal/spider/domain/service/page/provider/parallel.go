@@ -18,17 +18,15 @@ func NewChan(config spiderconfiginterface.Configurator, scanner pagescannerinter
 	return &Chan{config: config, scanner: scanner}
 }
 
-func (p *Chan) Provide(ctx context.Context, url *url.URL) (resultCh chan scannerdtointerface.Result) {
-	resultCh = make(chan scannerdtointerface.Result, 1)
-	defer close(resultCh)
-
+func (p *Chan) Provide(ctx context.Context, url *url.URL, resultCh chan<- scannerdtointerface.Result) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
 	for _, userAgent := range p.config.GetUserAgents() {
 		wg.Add(1)
-		go p.scanner.Scan(ctx, wg, url, userAgent, resultCh, p.config.GetRequestRetries())
+		go func(userAgent string) {
+			defer wg.Done()
+			p.scanner.Scan(ctx, url, userAgent, resultCh, p.config.GetRequestRetries())
+		}(userAgent)
 	}
-
-	return resultCh
 }

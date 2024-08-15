@@ -30,19 +30,20 @@ func NewParallel(
 }
 
 // Consume is a method which handles pages from channel in parallel.
-func (c *Parallel) Consume(ctx context.Context, pageDtoCh <-chan scannerdtointerface.Result) {
+func (c *Parallel) Consume(ctx context.Context, resultCh <-chan scannerdtointerface.Result) {
 	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
-	for dto := range pageDtoCh {
+	for dto := range resultCh {
 		wg.Add(1)
 		go func(dto scannerdtointerface.Result) {
 			defer wg.Done()
 
 			if dto.Error() != nil {
 				c.logger.InfoMsg(ctx, pageconsumerinterface.ScanURLError.Error(), logger.Fields{
-					"url": dto.URL(),
-					"err": dto.Error(),
+					"url":       dto.URL(),
+					"err":       dto.Error(),
+					"userAgent": dto.UserAgent(),
 				})
 				return
 			}
@@ -52,18 +53,23 @@ func (c *Parallel) Consume(ctx context.Context, pageDtoCh <-chan scannerdtointer
 			prev, found, err := c.repository.FindByURL(ctx, cur.URL)
 			if err != nil {
 				c.logger.ErrorMsg(ctx, pageconsumerinterface.FindPageError.Error(), logger.Fields{
-					"url": dto.URL(),
-					"err": dto.Error(),
+					"url":       dto.URL(),
+					"err":       dto.Error(),
+					"userAgent": dto.UserAgent(),
 				})
 				return
 			} else if !found {
 				if err = c.repository.Save(ctx, cur); err != nil {
 					c.logger.ErrorMsg(ctx, pageconsumerinterface.SavePageError.Error(), logger.Fields{
-						"url": dto.URL(),
-						"err": err.Error(),
+						"url":       dto.URL(),
+						"err":       err.Error(),
+						"userAgent": dto.UserAgent(),
 					})
 				} else {
-					c.logger.InfoMsg(ctx, pageconsumerinterface.PageSavedAtFirstTimeMsg, logger.Fields{"url": cur.URL})
+					c.logger.InfoMsg(ctx, pageconsumerinterface.PageSavedAtFirstTimeMsg, logger.Fields{
+						"url":       cur.URL,
+						"userAgent": dto.UserAgent(),
+					})
 				}
 				return
 			}
@@ -71,12 +77,16 @@ func (c *Parallel) Consume(ctx context.Context, pageDtoCh <-chan scannerdtointer
 			if !c.comparator.IsEquals(cur, prev) {
 				if err = c.repository.Save(ctx, cur); err != nil {
 					c.logger.ErrorMsg(ctx, pageconsumerinterface.SavePageError.Error(), logger.Fields{
-						"url": dto.URL(),
-						"err": err.Error(),
+						"url":       dto.URL(),
+						"err":       err.Error(),
+						"userAgent": dto.UserAgent(),
 					})
 				}
 			} else {
-				c.logger.InfoMsg(ctx, pageconsumerinterface.PagesAreEqualMsg, logger.Fields{"url": cur.URL})
+				c.logger.InfoMsg(ctx, pageconsumerinterface.PagesAreEqualMsg, logger.Fields{
+					"url":       cur.URL,
+					"userAgent": dto.UserAgent(),
+				})
 			}
 		}(dto)
 	}

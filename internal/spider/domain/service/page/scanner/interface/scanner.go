@@ -5,7 +5,6 @@ import (
 	"errors"
 	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
 	"net/url"
-	"sync"
 )
 
 var (
@@ -18,7 +17,6 @@ var (
 type PageScanner interface {
 	Scan(
 		ctx context.Context,
-		wg *sync.WaitGroup,
 		url *url.URL,
 		userAgent string,
 		resultCh chan<- scannerdtointerface.Result,

@@ -5,7 +5,9 @@ import (
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	pageconsumerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/consumer/interface"
 	pageproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/provider/interface"
+	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
 	"net/url"
+	"sync"
 )
 
 type Runner struct {
@@ -29,5 +31,21 @@ func New(
 
 // Run is a method which provides tasks and consume results.
 func (r *Runner) Run(ctx context.Context, url *url.URL) {
-	r.pageConsumer.Consume(ctx, r.pageProvider.Provide(ctx, url))
+	resultCh := make(chan scannerdtointerface.Result, 1)
+
+	wg := &sync.WaitGroup{}
+	defer wg.Wait()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		r.pageProvider.Provide(ctx, url, resultCh)
+		close(resultCh)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		r.pageConsumer.Consume(ctx, resultCh)
+	}()
 }

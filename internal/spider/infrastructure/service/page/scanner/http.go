@@ -34,11 +34,11 @@ func NewHTTP(
 		httpClientPool: &sync.Pool{
 			New: func() any {
 				return &http.Client{
-					Timeout: time.Second * 60,
-					Transport: &http.Transport{
-						MaxIdleConns:        100,
-						MaxIdleConnsPerHost: 1,
-					},
+					Timeout: time.Second * 10,
+					//Transport: &http.Transport{
+					//	MaxIdleConns:        100,
+					//	MaxIdleConnsPerHost: 1,
+					//},
 				}
 			},
 		},
@@ -48,18 +48,15 @@ func NewHTTP(
 // Scan is method which request target page and parse it into *entity.Page struct (recursive: depends on retries arg.).
 func (s *HTTP) Scan(
 	ctx context.Context,
-	wg *sync.WaitGroup,
 	url *url.URL,
 	userAgent string,
 	resultCh chan<- scannerdtointerface.Result,
 	retries int,
 ) {
-	defer wg.Done()
-
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	wg = &sync.WaitGroup{}
+	wg := &sync.WaitGroup{}
 	defer wg.Wait()
 
 	req, err := s.prepareRequest(ctx, url, userAgent, resultCh)
@@ -92,7 +89,7 @@ func (s *HTTP) scan(
 			"userAgent": req.UserAgent(),
 			"err":       err.Error(),
 		})
-		resultCh <- scannerdto.NewResult(nil, req.URL.String(), pagescannerinterface.RequestError)
+		resultCh <- scannerdto.NewResult(nil, req.URL.String(), req.UserAgent(), pagescannerinterface.RequestError)
 		return
 	}
 	defer func() { _ = resp.Body.Close() }()
@@ -103,14 +100,15 @@ func (s *HTTP) scan(
 				"url":        req.URL.String(),
 				"userAgent":  req.UserAgent(),
 				"statusCode": resp.StatusCode,
-				"retries":    retries,
+				"retries":    s.config.GetRequestRetries() - retries,
 			})
-			resultCh <- scannerdto.NewResult(nil, req.URL.String(), pagescannerinterface.NonPositiveStatusCodeError)
+			resultCh <- scannerdto.NewResult(nil, req.URL.String(), req.UserAgent(), pagescannerinterface.NonPositiveStatusCodeError)
 			return
 		}
 
 		wg.Add(1) // run a new attempt for scanning
 		go s.scan(ctx, wg, req, resultCh, retries-1, cancel)
+		return
 	}
 
 	page, err := s.parser.Parse(ctx, resp)
@@ -119,14 +117,14 @@ func (s *HTTP) scan(
 			"url":        req.URL.String(),
 			"userAgent":  req.UserAgent(),
 			"statusCode": resp.StatusCode,
-			"retries":    retries,
+			"retries":    s.config.GetRequestRetries() - retries,
 			"err":        err.Error(),
 		})
-		resultCh <- scannerdto.NewResult(nil, req.URL.String(), pagescannerinterface.ParserError)
+		resultCh <- scannerdto.NewResult(nil, req.URL.String(), req.UserAgent(), pagescannerinterface.ParserError)
 		return
 	}
 
-	resultCh <- scannerdto.NewResult(page, req.URL.String(), nil)
+	resultCh <- scannerdto.NewResult(page, req.URL.String(), req.UserAgent(), nil)
 
 	cancel()
 }
@@ -145,7 +143,7 @@ func (s *HTTP) prepareRequest(
 			"userAgent": userAgent,
 			"err":       pagescannerinterface.PrepareRequestError.Error(),
 		})
-		resultCh <- scannerdto.NewResult(nil, url.String(), err)
+		resultCh <- scannerdto.NewResult(nil, url.String(), userAgent, err)
 		return nil, err
 	}
 

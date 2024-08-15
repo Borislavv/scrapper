@@ -16,33 +16,38 @@ import (
 	taskconsumer "github.com/Borislavv/scrapper/internal/spider/domain/service/task/consumer"
 	taskprovider "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider"
 	taskrunner "github.com/Borislavv/scrapper/internal/spider/domain/service/task/runner"
+	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	pagerepository "github.com/Borislavv/scrapper/internal/spider/infrastructure/repository/page"
 	jobscheduler "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/job/scheduler"
 	pageparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/parser"
 	pagescanner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scanner"
 	taskparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/parser"
-	"log"
-	"sync"
+	"time"
 )
 
 type Spider struct {
 	ctx          context.Context
+	cancel       context.CancelFunc
 	config       spiderinterface.Configurator
+	logger       loggerinterface.Logger
+	loggerCancel loggerinterface.CancelFunc
 	jobRunner    runnerinterface.JobRunner
 	jobScheduler schedulerinterface.JobScheduler
 }
 
 func New(ctx context.Context) (*Spider, error) {
+	ctx, cancel := context.WithCancel(ctx)
+	_ = cancel
+
 	sharedCfg, err := sharedconfig.Load()
 	if err != nil {
 		return nil, err
 	}
 
-	logrus, cancel, err := logger.NewLogrus(sharedCfg)
+	logrus, logrusCancel, err := logger.NewLogrus(sharedCfg)
 	if err != nil {
 		return nil, err
 	}
-	defer cancel()
 
 	spiderCfg, err := spiderconfig.Load()
 	if err != nil {
@@ -80,22 +85,37 @@ func New(ctx context.Context) (*Spider, error) {
 
 	return &Spider{
 		ctx:          ctx,
+		cancel:       cancel,
 		config:       spiderCfg,
+		logger:       logrus,
+		loggerCancel: logrusCancel,
 		jobRunner:    jobRunner,
 		jobScheduler: jobScheduler,
 	}, nil
 }
 
-func (s *Spider) Run(wg *sync.WaitGroup) {
-	defer wg.Done()
+func (s *Spider) Start() {
+	defer s.Stop()
+	s.logger.InfoMsg(s.ctx, "spider started", nil)
 
-	log.Println("starting a new job")
+	s.logger.InfoMsg(s.ctx, "started a new job", nil)
+
 	s.jobRunner.Run(s.ctx)
-	log.Println("finished a job")
+
+	s.logger.InfoMsg(s.ctx, "job finished", nil)
+
+	time.Sleep(time.Second * 5)
+
+	s.logger.InfoMsg(s.ctx, "timeout exceeded", nil)
 
 	//for range s.jobScheduler.Manage(s.ctx) {
 	//	log.Println("starting a new job")
 	//	s.jobRunner.Run(s.ctx)
 	//	log.Println("finished a job")
 	//}
+}
+
+func (s *Spider) Stop() {
+	s.cancel()
+	s.loggerCancel()
 }

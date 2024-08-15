@@ -18,5 +18,5 @@ var (
 )
 
 type Consumer interface {
-	Consume(ctx context.Context, pageDtoCh <-chan scannerdtointerface.Result)
+	Consume(ctx context.Context, resultCh <-chan scannerdtointerface.Result)
 }

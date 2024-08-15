@@ -21,3 +21,5 @@ type Logger interface {
 	Fatal(ctx context.Context, err error, fields Fields) error
 	Panic(ctx context.Context, err error, fields Fields) error
 }
+
+type CancelFunc = func()
