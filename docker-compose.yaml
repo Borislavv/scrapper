@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: .ops/docker/go/Dockerfile
-    container_name: spider
+    container_name: spider_app
     volumes:
       - .:/app
     depends_on:
@@ -14,7 +14,7 @@ services:
 
   mongodb:
     image: bitnami/mongodb:7.0.5
-    container_name: mongodb
+    container_name: spider_mongodb
     ports:
       - "27017:27017"
     volumes:
@@ -28,4 +28,3 @@ services:
 
 volumes:
   mongo-data:
-  playwright:
