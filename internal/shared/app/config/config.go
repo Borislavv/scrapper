@@ -14,8 +14,9 @@ type Config struct {
 	LoggerFormatter string `envconfig:"LOGGER_FORMAT" default:"text"`
 	// LoggerReportCaller determines whether the call function and code line writes into log.
 	LoggerReportCaller bool `envconfig:"LOGGER_REPORT_CALLER" default:"true"`
-	// LoggerContextExtraFields determines which fields must be extract from context.Context and passed into log record.
-	LoggerContextExtraFields []string `envconfig:"LOGGER_CONTEXT_EXTRA_FIELD" default:"JOB_ID,TASK_ID"`
+	// LoggerContextExtraFields determines which fields must be extract from
+	// context.Context and passed into log record (see more into ctxenum package).
+	LoggerContextExtraFields []string `envconfig:"LOGGER_CONTEXT_EXTRA_FIELD" default:"jobId,taskId"`
 
 	// MongoHost is a host from docker-compose (mongodb container name).
 	MongoHost string `envconfig:"MONGO_HOST" default:"mongodb"`

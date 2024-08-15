@@ -11,6 +11,7 @@ require (
 require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
@@ -24,4 +25,5 @@ require (
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 )

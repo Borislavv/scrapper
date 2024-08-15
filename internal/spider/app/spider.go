@@ -22,7 +22,6 @@ import (
 	pageparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/parser"
 	pagescanner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scanner"
 	taskparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/parser"
-	"time"
 )
 
 type Spider struct {
@@ -77,10 +76,10 @@ func New(ctx context.Context) (*Spider, error) {
 		return nil, logrus.Fatal(ctx, err, nil)
 	}
 	taskRunner := taskrunner.New(spiderCfg, pageProvider, pageConsumer)
-	taskConsumer := taskconsumer.NewParallel(taskRunner)
+	taskConsumer := taskconsumer.NewParallel(logrus, spiderCfg, taskRunner)
 
 	// job dependencies
-	jobRunner := jobrunner.New(spiderCfg, taskConsumer, taskProvider)
+	jobRunner := jobrunner.New(logrus, spiderCfg, taskConsumer, taskProvider)
 	jobScheduler := jobscheduler.NewTicker(spiderCfg)
 
 	return &Spider{
@@ -96,23 +95,10 @@ func New(ctx context.Context) (*Spider, error) {
 
 func (s *Spider) Start() {
 	defer s.Stop()
-	s.logger.InfoMsg(s.ctx, "spider started", nil)
 
-	s.logger.InfoMsg(s.ctx, "started a new job", nil)
-
-	s.jobRunner.Run(s.ctx)
-
-	s.logger.InfoMsg(s.ctx, "job finished", nil)
-
-	time.Sleep(time.Second * 5)
-
-	s.logger.InfoMsg(s.ctx, "timeout exceeded", nil)
-
-	//for range s.jobScheduler.Manage(s.ctx) {
-	//	log.Println("starting a new job")
-	//	s.jobRunner.Run(s.ctx)
-	//	log.Println("finished a job")
-	//}
+	for range s.jobScheduler.Manage(s.ctx) {
+		s.jobRunner.Run(s.ctx)
+	}
 }
 
 func (s *Spider) Stop() {

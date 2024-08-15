@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/shutdown"
 	spider "github.com/Borislavv/scrapper/internal/spider/app"
 	"log"
 	"runtime"
@@ -13,7 +14,7 @@ func main() {
 
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
-	//gsh := shutdown.NewGraceful(cancel)
+	gsh := shutdown.NewGraceful(cancel)
 
 	s, err := spider.New(ctx)
 	if err != nil {
@@ -27,13 +28,7 @@ func main() {
 		s.Start()
 	}()
 
-	//gsh.ListenAndCancel()
-
-	//log.Println("shutting down...")
-
-	wg.Wait()
-
-	cancel()
+	gsh.ListenAndCancel()
 
 	log.Println("successfully shut down, exit")
 }
