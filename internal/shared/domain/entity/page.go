@@ -5,7 +5,7 @@ import (
 )
 
 type Page struct {
-	ID             vo.ID               `bson:",inline"`
+	vo.ID          `bson:",inline"`
 	URL            string              `bson:"url"`
 	Title          string              `bson:"title"`
 	Description    string              `bson:"description"`
@@ -17,6 +17,7 @@ type Page struct {
 	RelinkingBlock []string            `bson:"relinkingBlock"`
 	HrefLangs      []string            `bson:"hrefLangs"`
 	Headers        map[string][]string `bson:"headers"`
+	vo.Timestamp   `bson:",inline"`
 }
 
 func (p *Page) GetID() vo.ID {

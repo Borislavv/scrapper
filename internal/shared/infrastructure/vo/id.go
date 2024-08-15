@@ -5,13 +5,13 @@ import (
 )
 
 type ID struct {
-	Value primitive.ObjectID `json:"value" bson:"_id,omitempty"`
+	ID primitive.ObjectID `json:"id" bson:"_id,omitempty"`
 }
 
 func NewID(oid primitive.ObjectID) ID {
-	return ID{Value: oid}
+	return ID{ID: oid}
 }
 
-func (id *ID) Hex() string {
-	return id.Value.Hex()
+func (i *ID) Hex() string {
+	return i.ID.Hex()
 }
