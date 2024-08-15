@@ -13,7 +13,7 @@ import (
 	pagerepository "github.com/Borislavv/scrapper/internal/spider/infrastructure/repository/page"
 	jobrunner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/job/runner"
 	jobscheduler "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/job/scheduler"
-	"github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scrapper"
+	pagescanner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scanner"
 	taskparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/parser"
 	taskprovider "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/provider"
 	taskrunner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/runner"
@@ -66,15 +66,15 @@ func New(ctx context.Context) *Spider {
 	pageRepo := pagerepository.New(cfg, database)
 	pageSaver := pagesaver.New(pageRepo)
 	pageFinder := pagefinder.New(pageRepo)
-	pageScrapper := pagescrapper.New(cfg)
+	pageScrapper := pagescanner.NewHTTP(cfg)
 	pageComparator := pagecomparator.New()
 	// task dependencies
-	taskParser := taskparser.New(cfg)
+	taskParser := taskparser.NewCSV(cfg)
 	taskProvider := taskprovider.New(cfg, taskParser)
-	taskRunner := taskrunner.New(pageSaver, pageFinder, pageScrapper, pageComparator)
+	taskRunner := taskrunner.New(cfg, pageSaver, pageFinder, pageScrapper, pageComparator)
 	// job dependencies
 	jobRunner := jobrunner.New(cfg, taskRunner, taskProvider)
-	jobScheduler := jobscheduler.New(cfg)
+	jobScheduler := jobscheduler.NewTicker(cfg)
 
 	log.Println("spider is ready")
 
@@ -89,9 +89,13 @@ func New(ctx context.Context) *Spider {
 func (s *Spider) Run(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	for range s.jobScheduler.Manage(s.ctx) {
-		log.Println("starting a new job")
-		s.jobRunner.Run(s.ctx)
-		log.Println("finished a job")
-	}
+	log.Println("starting a new job")
+	s.jobRunner.Run(s.ctx)
+	log.Println("finished a job")
+
+	//for range s.jobScheduler.Manage(s.ctx) {
+	//	log.Println("starting a new job")
+	//	s.jobRunner.Run(s.ctx)
+	//	log.Println("finished a job")
+	//}
 }

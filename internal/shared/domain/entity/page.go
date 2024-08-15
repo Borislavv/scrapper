@@ -5,19 +5,18 @@ import (
 )
 
 type Page struct {
-	ID             vo.ID    `bson:",inline"`
-	URL            string   `bson:"url"`
-	Title          string   `bson:"title"`
-	Description    string   `bson:"description"`
-	Canonical      string   `bson:"canonical"`
-	H1             string   `bson:"р1"`
-	PlainText      string   `bson:"plainText"`
-	HTML           string   `bson:"html"`
-	FAQ            []string `bson:"faq"`
-	RelinkingBlock []string `bson:"relinkingBlock"`
-	HrefLangs      []string `bson:"hrefLangs"`
-	Logs           []string `bson:"logs"`
-	Network        []string `bson:"network"`
+	ID             vo.ID               `bson:",inline"`
+	URL            string              `bson:"url"`
+	Title          string              `bson:"title"`
+	Description    string              `bson:"description"`
+	Canonical      string              `bson:"canonical"`
+	H1             string              `bson:"h1"`
+	PlainText      string              `bson:"plainText"`
+	HTML           string              `bson:"html"`
+	FAQ            []string            `bson:"faq"`
+	RelinkingBlock []string            `bson:"relinkingBlock"`
+	HrefLangs      []string            `bson:"hrefLangs"`
+	Headers        map[string][]string `bson:"headers"`
 }
 
 func (p *Page) GetID() vo.ID {
@@ -64,10 +63,6 @@ func (p *Page) GetHTML() string {
 	return p.HTML
 }
 
-func (p *Page) GetLogs() []string {
-	return p.Logs
-}
-
-func (p *Page) GetNetwork() []string {
-	return p.Network
+func (p *Page) GetHeaders() map[string][]string {
+	return p.Headers
 }

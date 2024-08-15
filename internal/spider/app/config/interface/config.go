@@ -17,4 +17,6 @@ type Config interface {
 	GetMongoDatabase() string
 	GetMongoPagesCollection() string
 	GetMongoRequestTimeout() time.Duration
+	GetUserAgents() []string
+	GetRequestRetries() int
 }

@@ -1,6 +1,8 @@
 package entityinterface
 
-import "github.com/Borislavv/scrapper/internal/shared/infrastructure/vo"
+import (
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/vo"
+)
 
 type Page interface {
 	GetID() vo.ID
@@ -13,6 +15,5 @@ type Page interface {
 	GetRelinkingBlock() []string
 	GetHrefLangs() []string
 	GetHTML() string
-	GetLogs() []string
-	GetNetwork() []string
+	GetHeaders() map[string][]string
 }
