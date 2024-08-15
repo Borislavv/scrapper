@@ -4,24 +4,27 @@ import (
 	"context"
 	"errors"
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
 )
 
-type HTMLParser struct {
+type HTML struct {
+	logger loggerinterface.Logger
 }
 
-func NewHTML() *HTMLParser {
-	return &HTMLParser{}
+// NewHTML is a constructor of HTML parser.
+func NewHTML(logger loggerinterface.Logger) *HTML {
+	return &HTML{logger: logger}
 }
 
 // Parse is method which parsing a DOM tree for target meta-tags.
-func (p *HTMLParser) Parse(resp *http.Response) (*entity.Page, error) {
+func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, error) {
 	// create a new DOM tree from reader
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		if !(errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled)) {
-			return nil, err
+			return nil, p.logger.Error(ctx, err, nil)
 		}
 	}
 

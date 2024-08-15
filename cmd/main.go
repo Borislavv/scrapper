@@ -8,14 +8,18 @@ import (
 )
 
 func main() {
-	log.Println("starting the spider...")
-
 	wg := &sync.WaitGroup{}
 	ctx, cancel := context.WithCancel(context.Background())
 	//gsh := shutdown.NewGraceful(cancel)
 
+	s, err := spider.New(ctx)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	wg.Add(1)
-	go spider.New(ctx).Run(wg)
+	go s.Run(wg)
 
 	//gsh.ListenAndCancel()
 
@@ -25,5 +29,5 @@ func main() {
 
 	cancel()
 
-	log.Println("successfully shut down")
+	log.Println("successfully shut down, exit")
 }

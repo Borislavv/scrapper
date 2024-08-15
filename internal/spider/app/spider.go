@@ -2,88 +2,88 @@ package spider
 
 import (
 	"context"
-	"fmt"
+	sharedconfig "github.com/Borislavv/scrapper/internal/shared/app/config"
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/database"
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/logger"
 	"github.com/Borislavv/scrapper/internal/spider/app/config"
 	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
+	jobrunner "github.com/Borislavv/scrapper/internal/spider/domain/service/job/runner"
 	runnerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/job/runner/interface"
 	schedulerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/job/scheduler/interface"
 	pagecomparator "github.com/Borislavv/scrapper/internal/spider/domain/service/page/comparator"
-	pagefinder "github.com/Borislavv/scrapper/internal/spider/domain/service/page/finder"
-	pagesaver "github.com/Borislavv/scrapper/internal/spider/domain/service/page/saver"
+	pageconsumer "github.com/Borislavv/scrapper/internal/spider/domain/service/page/consumer"
+	pageprovider "github.com/Borislavv/scrapper/internal/spider/domain/service/page/provider"
+	taskconsumer "github.com/Borislavv/scrapper/internal/spider/domain/service/task/consumer"
+	taskprovider "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider"
+	taskrunner "github.com/Borislavv/scrapper/internal/spider/domain/service/task/runner"
 	pagerepository "github.com/Borislavv/scrapper/internal/spider/infrastructure/repository/page"
-	jobrunner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/job/runner"
 	jobscheduler "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/job/scheduler"
+	pageparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/parser"
 	pagescanner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scanner"
 	taskparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/parser"
-	taskprovider "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/provider"
-	taskrunner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/runner"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"log"
 	"sync"
 )
 
 type Spider struct {
 	ctx          context.Context
-	config       spiderinterface.Config
+	config       spiderinterface.Configurator
 	jobRunner    runnerinterface.JobRunner
 	jobScheduler schedulerinterface.JobScheduler
 }
 
-func New(ctx context.Context) *Spider {
-	cfg, err := spiderconfig.Load()
+func New(ctx context.Context) (*Spider, error) {
+	sharedCfg, err := sharedconfig.Load()
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+
+	logrus, cancel, err := logger.NewLogrus(sharedCfg)
+	if err != nil {
+		return nil, err
+	}
+	defer cancel()
+
+	spiderCfg, err := spiderconfig.Load()
+	if err != nil {
+		return nil, logrus.Fatal(ctx, err, nil)
 	}
 
 	// infrastructure
-	clientOptions := options.Client().ApplyURI(
-		fmt.Sprintf(
-			"mongodb://%s:%s@%s:%d",
-			cfg.GetMongoLogin(),
-			cfg.GetMongoPassword(),
-			cfg.GetMongoHost(),
-			cfg.GetMongoPort(),
-		),
-	)
-	mongoClient, err := mongo.Connect(ctx, clientOptions)
+	mongodb, err := database.NewMongo(logrus).Connect(ctx, sharedCfg)
 	if err != nil {
-		panic(err)
-	}
-	go func() {
-		<-ctx.Done()
-		_ = mongoClient.Disconnect(ctx)
-	}()
-
-	if err = mongoClient.Ping(ctx, readpref.Primary()); err != nil {
-		panic(err)
+		return nil, logrus.Fatal(ctx, err, nil)
 	}
 
-	database := mongoClient.Database(cfg.GetMongoDatabase())
+	// page infra. dependencies
+	pageRepo := pagerepository.NewMongo(spiderCfg, logrus, mongodb)
+	pageParser := pageparser.NewHTML(logrus)
+	pageScanner := pagescanner.NewHTTP(spiderCfg, pageParser, logrus)
 
-	// page dependencies
-	pageRepo := pagerepository.New(cfg, database)
-	pageSaver := pagesaver.New(pageRepo)
-	pageFinder := pagefinder.New(pageRepo)
-	pageScrapper := pagescanner.NewHTTP(cfg)
-	pageComparator := pagecomparator.New()
+	// page domain dependencies
+	pageComparator := pagecomparator.NewEqual()
+	pageConsumer := pageconsumer.NewParallel(logrus, pageRepo, pageComparator)
+	pageProvider := pageprovider.NewChan(spiderCfg, pageScanner)
+
 	// task dependencies
-	taskParser := taskparser.NewCSV(cfg)
-	taskProvider := taskprovider.New(cfg, taskParser)
-	taskRunner := taskrunner.New(cfg, pageSaver, pageFinder, pageScrapper, pageComparator)
-	// job dependencies
-	jobRunner := jobrunner.New(cfg, taskRunner, taskProvider)
-	jobScheduler := jobscheduler.NewTicker(cfg)
+	taskParser := taskparser.NewCSV(spiderCfg, logrus)
+	taskProvider, err := taskprovider.NewParallel(ctx, logrus, spiderCfg, taskParser)
+	if err != nil {
+		return nil, logrus.Fatal(ctx, err, nil)
+	}
+	taskRunner := taskrunner.New(spiderCfg, pageProvider, pageConsumer)
+	taskConsumer := taskconsumer.NewParallel(taskRunner)
 
-	log.Println("spider is ready")
+	// job dependencies
+	jobRunner := jobrunner.New(spiderCfg, taskConsumer, taskProvider)
+	jobScheduler := jobscheduler.NewTicker(spiderCfg)
 
 	return &Spider{
 		ctx:          ctx,
-		config:       cfg,
+		config:       spiderCfg,
 		jobRunner:    jobRunner,
 		jobScheduler: jobScheduler,
-	}
+	}, nil
 }
 
 func (s *Spider) Run(wg *sync.WaitGroup) {

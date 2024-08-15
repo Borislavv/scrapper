@@ -7,10 +7,10 @@ import (
 )
 
 type Ticker struct {
-	config spiderinterface.Config
+	config spiderinterface.Configurator
 }
 
-func NewTicker(config spiderinterface.Config) *Ticker {
+func NewTicker(config spiderinterface.Configurator) *Ticker {
 	return &Ticker{config: config}
 }
 

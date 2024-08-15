@@ -1,40 +1,50 @@
 package taskparser
 
 import (
+	"context"
 	"encoding/csv"
 	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
-	"log"
+	taskparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/parser/interface"
+	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"net/url"
 	"os"
 )
 
 type CSV struct {
-	config spiderconfiginterface.Config
+	config spiderconfiginterface.Configurator
+	logger logger.Logger
 }
 
-func NewCSV(config spiderconfiginterface.Config) *CSV {
-	return &CSV{config: config}
+// NewCSV is a constructor of CSV parser.
+func NewCSV(config spiderconfiginterface.Configurator, logger logger.Logger) *CSV {
+	return &CSV{config: config, logger: logger}
 }
 
-func (p *CSV) Parse() ([]*url.URL, error) {
+func (p *CSV) Parse(ctx context.Context) ([]*url.URL, error) {
 	filepath, err := util.Path(p.config.GetURLsFilepath())
 	if err != nil {
-		log.Println("CSV.Parse(): " + err.Error())
-		return nil, err
+		return nil, p.logger.Error(ctx, taskparserinterface.BuildFilepathError, logger.Fields{
+			"path": p.config.GetURLsFilepath(),
+			"err":  err.Error(),
+		})
 	}
 
 	file, err := os.Open(filepath)
 	if err != nil {
-		log.Println("CSV.Parse(): " + err.Error())
-		return nil, err
+		return nil, p.logger.Error(ctx, taskparserinterface.OpenFileError, logger.Fields{
+			"path": p.config.GetURLsFilepath(),
+			"err":  err.Error(),
+		})
 	}
 	defer func() { _ = file.Close() }()
 
 	records, err := csv.NewReader(file).ReadAll()
 	if err != nil {
-		log.Println("CSV.Parse(): " + err.Error())
-		return nil, err
+		return nil, p.logger.Error(ctx, taskparserinterface.ReadFileError, logger.Fields{
+			"path": p.config.GetURLsFilepath(),
+			"err":  err.Error(),
+		})
 	}
 
 	rawURLs := make([]string, 0, len(records))
@@ -49,8 +59,12 @@ func (p *CSV) Parse() ([]*url.URL, error) {
 	for _, rawURL := range rawURLs {
 		URL, err := url.Parse(rawURL)
 		if err != nil {
-			log.Println("CSV.Parse(): " + err.Error())
-			return nil, err
+			p.logger.WarningMsg(ctx, taskparserinterface.ParseURLError.Error(), logger.Fields{
+				"path": p.config.GetURLsFilepath(),
+				"err":  err.Error(),
+				"url":  rawURL,
+			})
+			continue
 		}
 		URLs = append(URLs, URL)
 	}

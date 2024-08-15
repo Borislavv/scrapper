@@ -4,14 +4,14 @@ import (
 	"github.com/Borislavv/scrapper/internal/spider/domain/entity/interface"
 )
 
-type PageComparator struct {
+type Equal struct {
 }
 
-func New() *PageComparator {
-	return &PageComparator{}
+func NewEqual() *Equal {
+	return &Equal{}
 }
 
-func (c *PageComparator) IsEquals(prev, cur entityinterface.Page) bool {
+func (c *Equal) IsEquals(prev, cur entityinterface.Page) bool {
 	isEqScalar := prev.GetTitle() == cur.GetTitle() &&
 		prev.GetDescription() == cur.GetDescription() &&
 		prev.GetCanonical() == cur.GetCanonical() &&

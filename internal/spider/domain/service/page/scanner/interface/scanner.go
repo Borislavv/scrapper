@@ -2,7 +2,7 @@ package pagescannerinterface
 
 import (
 	"context"
-	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
 	"net/url"
 	"sync"
 )
@@ -13,8 +13,7 @@ type PageScanner interface {
 		wg *sync.WaitGroup,
 		url *url.URL,
 		userAgent string,
-		pagesCh chan<- *entity.Page,
-		errsCh chan<- error,
+		resultCh chan<- scannerdtointerface.Result,
 		retries int,
 	)
 }
