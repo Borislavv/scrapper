@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	pagescannerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/interface"
 	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/PuerkitoBio/goquery"
 	"net/http"
@@ -24,7 +25,7 @@ func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, er
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		if !(errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled)) {
-			return nil, p.logger.Error(ctx, err, nil)
+			return nil, p.logger.Error(ctx, pagescannerinterface.ParserError, nil)
 		}
 	}
 

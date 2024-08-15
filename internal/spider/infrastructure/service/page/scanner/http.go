@@ -2,10 +2,10 @@ package pagescanner
 
 import (
 	"context"
-	"errors"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	pageparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/parser/interface"
 	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
+	pagescannerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/interface"
 	"github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	scannerdto "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scanner/dto"
 	"net/http"
@@ -87,26 +87,25 @@ func (s *HTTP) scan(
 
 	resp, err := client.Do(req)
 	if err != nil {
-		s.logger.ErrorMsg(ctx, "scanning page failed due to request error occurred", logger.Fields{
+		s.logger.ErrorMsg(ctx, pagescannerinterface.RequestError.Error(), logger.Fields{
 			"url":       req.URL.String(),
 			"userAgent": req.UserAgent(),
 			"err":       err.Error(),
 		})
-		resultCh <- scannerdto.NewResult(nil, req.URL.String(), err)
+		resultCh <- scannerdto.NewResult(nil, req.URL.String(), pagescannerinterface.RequestError)
 		return
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		if retries == 0 { // retries are exceeded, we go out with logging error
-			err = errors.New("non-positive status code received, all retries exceeded")
-			s.logger.ErrorMsg(ctx, "scanning page failed due to "+err.Error(), logger.Fields{
+			s.logger.ErrorMsg(ctx, pagescannerinterface.NonPositiveStatusCodeError.Error(), logger.Fields{
 				"url":        req.URL.String(),
 				"userAgent":  req.UserAgent(),
 				"statusCode": resp.StatusCode,
 				"retries":    retries,
 			})
-			resultCh <- scannerdto.NewResult(nil, req.URL.String(), err)
+			resultCh <- scannerdto.NewResult(nil, req.URL.String(), pagescannerinterface.NonPositiveStatusCodeError)
 			return
 		}
 
@@ -116,14 +115,14 @@ func (s *HTTP) scan(
 
 	page, err := s.parser.Parse(ctx, resp)
 	if err != nil {
-		s.logger.ErrorMsg(ctx, "scanning page failed due to parser error occurred", logger.Fields{
+		s.logger.ErrorMsg(ctx, pagescannerinterface.ParserError.Error(), logger.Fields{
 			"url":        req.URL.String(),
 			"userAgent":  req.UserAgent(),
 			"statusCode": resp.StatusCode,
 			"retries":    retries,
 			"err":        err.Error(),
 		})
-		resultCh <- scannerdto.NewResult(nil, req.URL.String(), err)
+		resultCh <- scannerdto.NewResult(nil, req.URL.String(), pagescannerinterface.ParserError)
 		return
 	}
 
@@ -141,10 +140,10 @@ func (s *HTTP) prepareRequest(
 ) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url.String(), nil)
 	if err != nil {
-		s.logger.ErrorMsg(ctx, "scanning page failed due to preparing request error occurred", logger.Fields{
+		s.logger.ErrorMsg(ctx, pagescannerinterface.PrepareRequestError.Error(), logger.Fields{
 			"url":       url.String(),
 			"userAgent": userAgent,
-			"err":       err.Error(),
+			"err":       pagescannerinterface.PrepareRequestError.Error(),
 		})
 		resultCh <- scannerdto.NewResult(nil, url.String(), err)
 		return nil, err
