@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	ScanURLError  = errors.New("page consume failed due to error occurred while scanning url")
-	FindPageError = errors.New("page consume failed due to error occurred while searching page by repository")
-	SavePageError = errors.New("page consume failed due to error occurred while saving page by repository")
+	ScanURLError  = errors.New("page consuming failed due to error occurred while scanning url")
+	FindPageError = errors.New("page consuming failed due to error occurred while searching page by repository")
+	SavePageError = errors.New("page consuming failed due to error occurred while saving page by repository")
 )
 
 var (

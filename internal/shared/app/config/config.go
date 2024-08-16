@@ -11,9 +11,7 @@ type Config struct {
 	// LoggerLevel: /dev/null/, stdout, or path to file (logs will store in the {projectRoot}/var/log dir.).
 	LoggerOutput string `envconfig:"LOGGER_OUTPUT" default:"stdout"`
 	// LoggerFormatter: text, json.
-	LoggerFormatter string `envconfig:"LOGGER_FORMAT" default:"text"`
-	// LoggerReportCaller determines whether the call function and code line writes into log.
-	LoggerReportCaller bool `envconfig:"LOGGER_REPORT_CALLER" default:"true"`
+	LoggerFormatter string `envconfig:"LOGGER_FORMAT" default:"json"`
 	// LoggerContextExtraFields determines which fields must be extract from
 	// context.Context and passed into log record (see more into ctxenum package).
 	LoggerContextExtraFields []string `envconfig:"LOGGER_CONTEXT_EXTRA_FIELD" default:"jobId,taskId"`
@@ -50,10 +48,6 @@ func (c *Config) GetLoggerOutput() string {
 
 func (c *Config) GetLoggerFormatter() string {
 	return c.LoggerFormatter
-}
-
-func (c *Config) GetLoggerReportCaller() bool {
-	return c.LoggerReportCaller
 }
 
 func (c *Config) GetLoggerContextExtraFields() []string {

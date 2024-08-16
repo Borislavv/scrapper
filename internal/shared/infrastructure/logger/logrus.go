@@ -5,7 +5,6 @@ import (
 	sharedconfiginterface "github.com/Borislavv/scrapper/internal/shared/app/config/interface"
 	loggerdto "github.com/Borislavv/scrapper/internal/shared/infrastructure/logger/dto"
 	loggerenum "github.com/Borislavv/scrapper/internal/shared/infrastructure/logger/enum"
-	loggerhook "github.com/Borislavv/scrapper/internal/shared/infrastructure/logger/hook"
 	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
 	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/sirupsen/logrus"
@@ -18,18 +17,12 @@ type Logrus struct {
 	wg                 *sync.WaitGroup
 	logger             *logrus.Logger
 	contextExtraFields []string
-	msgCh              chan loggerdto.MsgDto
-	errCh              chan loggerdto.ErrDto
+	msgCh              chan *loggerdto.MsgDto
+	errCh              chan *loggerdto.ErrDto
 }
 
 func NewLogrus(cfg sharedconfiginterface.Configurator) (logger *Logrus, cancel loggerinterface.CancelFunc, err error) {
-	lgrs := logrus.New()
-
-	if cfg.GetLoggerReportCaller() {
-		lgrs.AddHook(loggerhook.CallerHook{Skip: 7})
-	}
-
-	l := &Logrus{logger: lgrs, contextExtraFields: cfg.GetLoggerContextExtraFields()}
+	l := &Logrus{logger: logrus.New(), contextExtraFields: cfg.GetLoggerContextExtraFields()}
 
 	l.logger.SetLevel(l.getLevel(cfg.GetLoggerLevel()))
 	l.logger.SetFormatter(l.getFormat(cfg.GetLoggerFormatter()))
@@ -40,8 +33,8 @@ func NewLogrus(cfg sharedconfiginterface.Configurator) (logger *Logrus, cancel l
 	}
 	l.logger.SetOutput(output)
 
-	l.msgCh = make(chan loggerdto.MsgDto, 1)
-	l.errCh = make(chan loggerdto.ErrDto, 1)
+	l.msgCh = make(chan *loggerdto.MsgDto, 1)
+	l.errCh = make(chan *loggerdto.ErrDto, 1)
 
 	l.wg = &sync.WaitGroup{}
 	l.wg.Add(2)
@@ -62,6 +55,7 @@ func (l *Logrus) handleErrors() {
 		l.logger.
 			WithFields(err.Fields).
 			WithFields(l.fieldsFromContext(err.Ctx)).
+			WithFields(err.CallerFields()).
 			Log(l.getLevel(err.Level), err.Err.Error())
 	}
 }
@@ -72,121 +66,62 @@ func (l *Logrus) handleMessages() {
 		l.logger.
 			WithFields(msg.Fields).
 			WithFields(l.fieldsFromContext(msg.Ctx)).
+			WithFields(msg.CallerFields()).
 			Log(l.getLevel(msg.Level), msg.Msg)
 	}
 }
 
 func (l *Logrus) DebugMsg(ctx context.Context, msg string, fields loggerinterface.Fields) {
-	l.msgCh <- loggerdto.MsgDto{
-		Ctx:    ctx,
-		Level:  loggerenum.DebugLvl,
-		Msg:    msg,
-		Fields: fields,
-	}
+	l.msgCh <- loggerdto.NewMsg(ctx, loggerenum.DebugLvl, msg, fields)
 }
 
 func (l *Logrus) InfoMsg(ctx context.Context, msg string, fields loggerinterface.Fields) {
-	l.msgCh <- loggerdto.MsgDto{
-		Ctx:    ctx,
-		Level:  loggerenum.InfoLvl,
-		Msg:    msg,
-		Fields: fields,
-	}
+	l.msgCh <- loggerdto.NewMsg(ctx, loggerenum.InfoLvl, msg, fields)
 }
 
 func (l *Logrus) WarningMsg(ctx context.Context, msg string, fields loggerinterface.Fields) {
-	l.msgCh <- loggerdto.MsgDto{
-		Ctx:    ctx,
-		Level:  loggerenum.WarningLvl,
-		Msg:    msg,
-		Fields: fields,
-	}
+	l.msgCh <- loggerdto.NewMsg(ctx, loggerenum.WarningLvl, msg, fields)
 }
 
 func (l *Logrus) ErrorMsg(ctx context.Context, msg string, fields loggerinterface.Fields) {
-	l.msgCh <- loggerdto.MsgDto{
-		Ctx:    ctx,
-		Level:  loggerenum.ErrorLvl,
-		Msg:    msg,
-		Fields: fields,
-	}
+	l.msgCh <- loggerdto.NewMsg(ctx, loggerenum.ErrorLvl, msg, fields)
 }
 
 func (l *Logrus) FatalMsg(ctx context.Context, msg string, fields loggerinterface.Fields) {
-	l.msgCh <- loggerdto.MsgDto{
-		Ctx:    ctx,
-		Level:  loggerenum.FatalLvl,
-		Msg:    msg,
-		Fields: fields,
-	}
+	l.msgCh <- loggerdto.NewMsg(ctx, loggerenum.FatalLvl, msg, fields)
 }
 
 func (l *Logrus) PanicMsg(ctx context.Context, msg string, fields loggerinterface.Fields) {
-	l.msgCh <- loggerdto.MsgDto{
-		Ctx:    ctx,
-		Level:  loggerenum.PanicLvl,
-		Msg:    msg,
-		Fields: fields,
-	}
+	l.msgCh <- loggerdto.NewMsg(ctx, loggerenum.PanicLvl, msg, fields)
 }
 
 func (l *Logrus) Debug(ctx context.Context, err error, fields loggerinterface.Fields) error {
-	l.errCh <- loggerdto.ErrDto{
-		Ctx:    ctx,
-		Level:  loggerenum.DebugLvl,
-		Err:    err,
-		Fields: fields,
-	}
+	l.errCh <- loggerdto.NewErr(ctx, loggerenum.DebugLvl, err, fields)
 	return err
 }
 
 func (l *Logrus) Info(ctx context.Context, err error, fields loggerinterface.Fields) error {
-	l.errCh <- loggerdto.ErrDto{
-		Ctx:    ctx,
-		Level:  loggerenum.InfoLvl,
-		Err:    err,
-		Fields: fields,
-	}
+	l.errCh <- loggerdto.NewErr(ctx, loggerenum.InfoLvl, err, fields)
 	return err
 }
 
 func (l *Logrus) Warning(ctx context.Context, err error, fields loggerinterface.Fields) error {
-	l.errCh <- loggerdto.ErrDto{
-		Ctx:    ctx,
-		Level:  loggerenum.WarningLvl,
-		Err:    err,
-		Fields: fields,
-	}
+	l.errCh <- loggerdto.NewErr(ctx, loggerenum.WarningLvl, err, fields)
 	return err
 }
 
 func (l *Logrus) Error(ctx context.Context, err error, fields loggerinterface.Fields) error {
-	l.errCh <- loggerdto.ErrDto{
-		Ctx:    ctx,
-		Level:  loggerenum.ErrorLvl,
-		Err:    err,
-		Fields: fields,
-	}
+	l.errCh <- loggerdto.NewErr(ctx, loggerenum.ErrorLvl, err, fields)
 	return err
 }
 
 func (l *Logrus) Fatal(ctx context.Context, err error, fields loggerinterface.Fields) error {
-	l.errCh <- loggerdto.ErrDto{
-		Ctx:    ctx,
-		Level:  loggerenum.FatalLvl,
-		Err:    err,
-		Fields: fields,
-	}
+	l.errCh <- loggerdto.NewErr(ctx, loggerenum.FatalLvl, err, fields)
 	return err
 }
 
 func (l *Logrus) Panic(ctx context.Context, err error, fields loggerinterface.Fields) error {
-	l.errCh <- loggerdto.ErrDto{
-		Ctx:    ctx,
-		Level:  loggerenum.PanicLvl,
-		Err:    err,
-		Fields: fields,
-	}
+	l.errCh <- loggerdto.NewErr(ctx, loggerenum.PanicLvl, err, fields)
 	return err
 }
 

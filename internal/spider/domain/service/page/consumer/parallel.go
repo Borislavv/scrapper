@@ -40,7 +40,7 @@ func (c *Parallel) Consume(ctx context.Context, resultCh <-chan scannerdtointerf
 			defer wg.Done()
 
 			if dto.Error() != nil {
-				c.logger.InfoMsg(ctx, pageconsumerinterface.ScanURLError.Error(), logger.Fields{
+				c.logger.ErrorMsg(ctx, pageconsumerinterface.ScanURLError.Error(), logger.Fields{
 					"url":       dto.URL(),
 					"err":       dto.Error(),
 					"userAgent": dto.UserAgent(),

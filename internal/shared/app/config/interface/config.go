@@ -5,7 +5,6 @@ type Configurator interface {
 	GetLoggerLevel() string
 	GetLoggerOutput() string
 	GetLoggerFormatter() string
-	GetLoggerReportCaller() bool
 	GetLoggerContextExtraFields() []string
 	/* mongo */
 	GetMongoHost() string
