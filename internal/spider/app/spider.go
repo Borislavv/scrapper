@@ -2,7 +2,6 @@ package spider
 
 import (
 	"context"
-	sharedconfig "github.com/Borislavv/scrapper/internal/shared/app/config"
 	"github.com/Borislavv/scrapper/internal/shared/infrastructure/database"
 	"github.com/Borislavv/scrapper/internal/shared/infrastructure/logger"
 	"github.com/Borislavv/scrapper/internal/spider/app/config"
@@ -22,6 +21,7 @@ import (
 	pageparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/parser"
 	pagescanner "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scanner"
 	taskparser "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/task/parser"
+	sharedconfig "gitlab.xbet.lan/web-backend/php/spider/internal/shared/app/config"
 )
 
 type Spider struct {
