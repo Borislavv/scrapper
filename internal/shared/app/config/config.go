@@ -21,11 +21,11 @@ type Config struct {
 	// MongoPort is an exposed port of mongodb.
 	MongoPort int `envconfig:"MONGO_PORT" default:"27017"`
 	// MongoLogin is a login for simple auth.
-	MongoLogin string `envconfig:"MONGO_LOGIN" default:"useo"`
+	MongoLogin string `envconfig:"MONGO_LOGIN" default:"spider"`
 	// MongoPassword is a password for simple auth.
-	MongoPassword string `envconfig:"MONGO_PASSWORD" default:"pseo"`
+	MongoPassword string `envconfig:"MONGO_PASSWORD" default:"spider"`
 	// MongoDatabase is a name of target mongodb.
-	MongoDatabase string `envconfig:"MONGO_DATABASE" default:"seo"`
+	MongoDatabase string `envconfig:"MONGO_DATABASE" default:"spider"`
 	// MongoRequestTimeout is a timeout per request to mongodb.
 	MongoRequestTimeout time.Duration `envconfig:"MONGO_REQUEST_TIMEOUT" default:"5s"`
 }
