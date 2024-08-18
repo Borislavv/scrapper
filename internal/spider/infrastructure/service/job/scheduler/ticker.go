@@ -2,8 +2,8 @@ package jobscheduler
 
 import (
 	"context"
-	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
-	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
+	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/infrastructure/util"
+	spiderinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
 )
 
 type Ticker struct {
