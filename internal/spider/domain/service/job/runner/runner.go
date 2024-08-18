@@ -2,13 +2,12 @@ package jobrunner
 
 import (
 	"context"
-	"github.com/Borislavv/scrapper/internal/shared/domain/enum/ctx"
-	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
-	taskconsumerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/consumer/interface"
-	taskproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider/interface"
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/google/uuid"
-	"time"
+	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/enum/ctx"
+	spiderinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
+	taskconsumerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/task/consumer/interface"
+	taskproviderinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/task/provider/interface"
+	logger "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
 )
 
 type Runner struct {
@@ -40,8 +39,8 @@ func (s *Runner) Run(ctx context.Context) {
 
 	s.logger.InfoMsg(ctx, "started a new job", nil)
 
-	// close the job 5 minutes before next will be running
-	ctx, cancel := context.WithTimeout(ctx, s.config.GetJobsFrequency()-(time.Minute*5))
+	// close the job before a new job will be running
+	ctx, cancel := context.WithTimeout(ctx, s.config.GetJobsFrequency()-(s.config.GetJobsFrequency()/10))
 	defer cancel()
 
 	s.taskConsumer.Consume(ctx, s.taskProvider.Provide(ctx))
