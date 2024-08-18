@@ -2,12 +2,12 @@ package logger
 
 import (
 	"context"
-	sharedconfiginterface "github.com/Borislavv/scrapper/internal/shared/app/config/interface"
-	loggerdto "github.com/Borislavv/scrapper/internal/shared/infrastructure/logger/dto"
-	loggerenum "github.com/Borislavv/scrapper/internal/shared/infrastructure/logger/enum"
-	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
-	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/sirupsen/logrus"
+	sharedconfiginterface "gitlab.xbet.lan/web-backend/php/spider/internal/shared/app/config/interface"
+	loggerdto "gitlab.xbet.lan/web-backend/php/spider/internal/shared/infrastructure/logger/dto"
+	loggerenum "gitlab.xbet.lan/web-backend/php/spider/internal/shared/infrastructure/logger/enum"
+	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/infrastructure/util"
+	loggerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
 	"os"
 	"path/filepath"
 	"sync"
