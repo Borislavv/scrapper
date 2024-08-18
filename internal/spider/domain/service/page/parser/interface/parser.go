@@ -3,7 +3,7 @@ package pageparserinterface
 import (
 	"context"
 	"errors"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/entity"
+	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
 	"net/http"
 )
 

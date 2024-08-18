@@ -2,11 +2,12 @@ package provider
 
 import (
 	"context"
-	spiderinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/task/parser/interface"
-	taskproviderinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/task/provider/interface"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
 	"net/url"
+
+	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
+	taskparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/parser/interface"
+	taskproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider/interface"
+	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 )
 
 type Parallel struct {

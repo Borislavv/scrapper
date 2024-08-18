@@ -1,7 +1,7 @@
 package scannerdto
 
 import (
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/entity"
+	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
 )
 
 type Result struct {

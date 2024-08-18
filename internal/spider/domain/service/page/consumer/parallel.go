@@ -2,11 +2,11 @@ package pageconsumer
 
 import (
 	"context"
-	pagerepositoryinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/repository/interface"
-	pagecomparatorinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/comparator/interface"
-	pageconsumerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/consumer/interface"
-	scannerdtointerface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/dto/interface"
-	logger "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
+	pagerepositoryinterface "github.com/Borislavv/scrapper/internal/spider/domain/repository/interface"
+	pagecomparatorinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/comparator/interface"
+	pageconsumerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/consumer/interface"
+	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
+	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"sync"
 )
 

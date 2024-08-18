@@ -1,8 +1,9 @@
 package entity
 
 import (
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/infrastructure/vo"
 	"time"
+
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/vo"
 )
 
 type Page struct {

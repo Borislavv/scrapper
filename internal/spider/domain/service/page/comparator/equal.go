@@ -1,7 +1,7 @@
 package pagecomparator
 
 import (
-	"gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/entity/interface"
+	"github.com/Borislavv/scrapper/internal/spider/domain/entity/interface"
 )
 
 type Equal struct {

@@ -3,7 +3,8 @@ package pageconsumerinterface
 import (
 	"context"
 	"errors"
-	scannerdtointerface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/dto/interface"
+
+	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
 )
 
 var (

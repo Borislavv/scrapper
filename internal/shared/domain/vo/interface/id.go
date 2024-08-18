@@ -1,6 +1,6 @@
 package vointerface
 
-import "gitlab.xbet.lan/web-backend/php/spider/internal/shared/infrastructure/vo"
+import "github.com/Borislavv/scrapper/internal/shared/infrastructure/vo"
 
 type Identifier interface {
 	GetID() vo.ID

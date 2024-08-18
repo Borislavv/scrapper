@@ -3,12 +3,13 @@ package taskparser
 import (
 	"context"
 	"encoding/csv"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/infrastructure/util"
-	spiderconfiginterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
-	taskparserinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/task/parser/interface"
-	logger "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
 	"net/url"
 	"os"
+
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
+	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
+	taskparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/parser/interface"
+	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 )
 
 type CSV struct {

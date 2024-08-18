@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/infrastructure/shutdown"
-	spider "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app"
+	"github.com/Borislavv/scrapper/internal/shared/infrastructure/shutdown"
+	spider "github.com/Borislavv/scrapper/internal/spider/app"
 	"log"
 	"runtime"
 	"sync"

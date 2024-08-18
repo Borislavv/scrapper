@@ -2,12 +2,12 @@ package jobrunner
 
 import (
 	"context"
+	"github.com/Borislavv/scrapper/internal/shared/domain/enum/ctx"
+	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
+	taskconsumerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/consumer/interface"
+	taskproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider/interface"
+	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/google/uuid"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/enum/ctx"
-	spiderinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
-	taskconsumerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/task/consumer/interface"
-	taskproviderinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/task/provider/interface"
-	logger "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
 )
 
 type Runner struct {

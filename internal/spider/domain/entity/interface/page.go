@@ -1,8 +1,8 @@
 package entityinterface
 
 import (
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/entity"
-	vointerface "gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/vo/interface"
+	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	vointerface "github.com/Borislavv/scrapper/internal/shared/domain/vo/interface"
 )
 
 type Page interface {

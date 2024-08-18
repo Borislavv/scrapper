@@ -1,4 +1,4 @@
-module gitlab.xbet.lan/web-backend/php/spider
+module github.com/Borislavv/scrapper
 
 go 1.22.1
 

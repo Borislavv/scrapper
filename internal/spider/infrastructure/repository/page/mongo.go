@@ -3,15 +3,16 @@ package pagerepository
 import (
 	"context"
 	"errors"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/entity"
-	spiderconfiginterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
-	pagerepositoryinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/repository/interface"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
+	"time"
+
+	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
+	pagerepositoryinterface "github.com/Borislavv/scrapper/internal/spider/domain/repository/interface"
+	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type Mongo struct {

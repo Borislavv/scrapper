@@ -3,8 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
-	sharedconfiginterface "gitlab.xbet.lan/web-backend/php/spider/internal/shared/app/config/interface"
-	loggerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
+
+	sharedconfiginterface "github.com/Borislavv/scrapper/internal/shared/app/config/interface"
+	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"

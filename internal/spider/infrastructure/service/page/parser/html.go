@@ -3,11 +3,12 @@ package pageparser
 import (
 	"context"
 	"errors"
-	"github.com/PuerkitoBio/goquery"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/entity"
-	pageparserinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/parser/interface"
-	"gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
 	"net/http"
+
+	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	pageparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/parser/interface"
+	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
+	"github.com/PuerkitoBio/goquery"
 )
 
 type HTML struct {
