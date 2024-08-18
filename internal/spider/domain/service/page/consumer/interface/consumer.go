@@ -3,7 +3,7 @@ package pageconsumerinterface
 import (
 	"context"
 	"errors"
-	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
+	scannerdtointerface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/dto/interface"
 )
 
 var (
@@ -15,6 +15,7 @@ var (
 var (
 	PagesAreEqualMsg        = "pages are equal"
 	PageSavedAtFirstTimeMsg = "page saved at first time"
+	BlinkingPageSavedMsg    = "blinking page saved"
 )
 
 type Consumer interface {
