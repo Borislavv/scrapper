@@ -30,5 +30,7 @@ func main() {
 
 	gsh.ListenAndCancel()
 
+	wg.Wait()
+
 	log.Println("successfully shut down, exit")
 }
