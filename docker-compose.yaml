@@ -4,27 +4,49 @@ services:
   spider:
     build:
       context: .
-      dockerfile: .ops/docker/go/Dockerfile
-    container_name: spider_app
+      dockerfile: .ops/docker/go/dev/Dockerfile
+    container_name: spider
     volumes:
       - .:/app
     depends_on:
       - mongodb
     platform: linux/amd64
+    environment:
+      # Logger
+      LOGGER_LEVEL: "debug"
+      LOGGER_OUTPUT: "stdout"
+      LOGGER_FORMAT: "json"
+      LOGGER_CONTEXT_EXTRA_FIELD: "jobId,taskId"
+      # Mongodb
+      MONGO_HOST: "mongodb"
+      MONGO_PORT: "27017"
+      MONGO_LOGIN: "spider"
+      MONGO_PASSWORD: "spider"
+      MONGO_DATABASE: "spider"
+      MONGO_REQUEST_TIMEOUT: "5s"
+      # Spider
+      URLS_FILEPATH: "/public/data/urls_test.csv"
+      JOB_FREQUENCY: "1h"
+      TASKS_PER_SECOND_LIMIT: "10"
+      TASKS_CONCURRENCY_LIMIT: "10"
+      TIMEOUT_PER_URL: "1m"
+      USER_AGENTS: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko)|Chrome/118.0.5993.70 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+      REQUEST_RETRIES: "3"
+      MONGO_PAGES_COLLECTION: "pages"
 
   mongodb:
     image: bitnami/mongodb:7.0.5
-    container_name: spider_mongodb
+    container_name: mongodb
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
     environment:
-      MONGODB_ROOT_USER: "useo"
-      MONGODB_ROOT_PASSWORD: "pseo"
-      MONGODB_USERNAME: "seo"
-      MONGODB_PASSWORD: "seo"
-      MONGODB_DATABASE: "seo"
+      MONGODB_ROOT_USER: "root_spider"
+      MONGODB_ROOT_PASSWORD: "root_spider"
+      MONGODB_USERNAME: "spider"
+      MONGODB_PASSWORD: "spider"
+      MONGODB_DATABASE: "spider"
 
 volumes:
   mongo-data:
