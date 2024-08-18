@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 	"fmt"
-	sharedconfiginterface "github.com/Borislavv/scrapper/internal/shared/app/config/interface"
-	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
+	sharedconfiginterface "gitlab.xbet.lan/web-backend/php/spider/internal/shared/app/config/interface"
+	loggerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -20,11 +20,12 @@ func NewMongo(logger loggerinterface.Logger) *Mongo {
 
 func (m *Mongo) Connect(ctx context.Context, cfg sharedconfiginterface.Configurator) (*mongo.Database, error) {
 	clientOptions := options.Client().ApplyURI(fmt.Sprintf(
-		"mongodb://%s:%s@%s:%d",
+		"mongodb://%s:%s@%s:%d/?authSource=%s",
 		cfg.GetMongoLogin(),
 		cfg.GetMongoPassword(),
 		cfg.GetMongoHost(),
 		cfg.GetMongoPort(),
+		cfg.GetMongoDatabase(),
 	))
 
 	mongoClient, err := mongo.Connect(ctx, clientOptions)
