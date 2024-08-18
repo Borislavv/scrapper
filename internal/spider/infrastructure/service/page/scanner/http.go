@@ -2,12 +2,12 @@ package pagescanner
 
 import (
 	"context"
-	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
-	pageparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/parser/interface"
-	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
-	pagescannerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/interface"
-	"github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
-	scannerdto "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scanner/dto"
+	spiderconfiginterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
+	pageparserinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/parser/interface"
+	scannerdtointerface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/dto/interface"
+	pagescannerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/interface"
+	"gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
+	scannerdto "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/service/page/scanner/dto"
 	"net/http"
 	"net/url"
 	"sync"
