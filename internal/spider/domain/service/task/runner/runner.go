@@ -2,10 +2,10 @@ package taskrunner
 
 import (
 	"context"
-	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
-	pageconsumerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/consumer/interface"
-	pageproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/provider/interface"
-	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
+	spiderconfiginterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
+	pageconsumerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/consumer/interface"
+	pageproviderinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/provider/interface"
+	scannerdtointerface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/dto/interface"
 	"net/url"
 	"sync"
 )
