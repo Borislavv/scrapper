@@ -2,7 +2,7 @@ package pageproviderinterface
 
 import (
 	"context"
-	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
+	scannerdtointerface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/dto/interface"
 	"net/url"
 )
 
