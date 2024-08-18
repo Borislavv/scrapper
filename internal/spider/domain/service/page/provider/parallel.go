@@ -2,9 +2,9 @@ package pageprovider
 
 import (
 	"context"
-	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
-	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
-	pagescannerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/interface"
+	spiderconfiginterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/app/config/interface"
+	scannerdtointerface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/dto/interface"
+	pagescannerinterface "gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/service/page/scanner/interface"
 	"net/url"
 	"sync"
 )
