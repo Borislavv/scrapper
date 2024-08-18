@@ -1,7 +1,7 @@
 package pagecomparatorinterface
 
 import (
-	"github.com/Borislavv/scrapper/internal/spider/domain/entity/interface"
+	"gitlab.xbet.lan/web-backend/php/spider/internal/spider/domain/entity/interface"
 )
 
 type PageComparator interface {
