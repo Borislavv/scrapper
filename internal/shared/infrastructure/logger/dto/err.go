@@ -2,8 +2,8 @@ package loggerdto
 
 import (
 	"context"
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/sirupsen/logrus"
+	logger "gitlab.xbet.lan/web-backend/php/spider/internal/spider/infrastructure/logger/interface"
 	"runtime"
 	"strings"
 )
