@@ -1,6 +1,6 @@
 package scannerdtointerface
 
-import "github.com/Borislavv/scrapper/internal/shared/domain/entity"
+import "gitlab.xbet.lan/web-backend/php/spider/internal/shared/domain/entity"
 
 type Result interface {
 	URL() string
