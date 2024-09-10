@@ -2,7 +2,6 @@ package jobscheduler
 
 import (
 	"context"
-
 	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
 	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 )
@@ -18,7 +17,7 @@ func NewTicker(config spiderinterface.Configurator) *Ticker {
 func (s *Ticker) Manage(ctx context.Context) <-chan struct{} {
 	ticker, cancel := util.NewTicker(ctx, s.config.GetJobsFrequency())
 
-	runJobCh := make(chan struct{}, 1)
+	runJobCh := make(chan struct{})
 
 	go func() {
 		for {
