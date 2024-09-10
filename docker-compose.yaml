@@ -11,10 +11,12 @@ services:
     depends_on:
       - mongodb
     platform: linux/amd64
+    ports:
+      - "8000:8000"
     environment:
       # Logger
       LOGGER_LEVEL: "debug"
-      LOGGER_OUTPUT: "stdout"
+      LOGGER_OUTPUT: "stderr"
       LOGGER_FORMAT: "json"
       LOGGER_CONTEXT_EXTRA_FIELD: "jobId,taskId"
       # Mongodb
@@ -26,19 +28,26 @@ services:
       MONGO_REQUEST_TIMEOUT: "5s"
       # Spider
       URLS_FILEPATH: "/public/data/urls_test.csv"
-      JOB_FREQUENCY: "1h"
+      JOB_FREQUENCY: "1m"
       TASKS_PER_SECOND_LIMIT: "10"
       TASKS_CONCURRENCY_LIMIT: "10"
       TIMEOUT_PER_URL: "1m"
-      USER_AGENTS: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko)|Chrome/118.0.5993.70 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+      USER_AGENTS: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.70 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
       REQUEST_RETRIES: "3"
       MONGO_PAGES_COLLECTION: "pages"
+      # Golang
+      GOMAXPROCS: "0"
+      # Infra. server
+      INFRASTRUCTURE_SERVER_NAME: "infrastructure"
+      INFRASTRUCTURE_SERVER_PORT: ":8000"
+      INFRASTRUCTURE_SERVER_SHUTDOWN_TIMEOUT: "5s"
+      INFRASTRUCTURE_SERVER_REQUEST_TIMEOUT: "1m"
 
   mongodb:
     image: bitnami/mongodb:7.0.5
     container_name: mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongo-data:/data/db
     environment:
