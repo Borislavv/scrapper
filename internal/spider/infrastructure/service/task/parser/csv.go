@@ -3,13 +3,12 @@ package taskparser
 import (
 	"context"
 	"encoding/csv"
-	"net/url"
-	"os"
-
+	logger "github.com/Borislavv/scrapper/internal/shared/domain/service/logger/interface"
 	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	taskparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/parser/interface"
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
+	"net/url"
+	"os"
 )
 
 type CSV struct {
