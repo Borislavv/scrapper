@@ -2,11 +2,11 @@ package pageconsumer
 
 import (
 	"context"
+	logger "github.com/Borislavv/scrapper/internal/shared/domain/service/logger/interface"
 	pagerepositoryinterface "github.com/Borislavv/scrapper/internal/spider/domain/repository/interface"
 	pagecomparatorinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/comparator/interface"
 	pageconsumerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/consumer/interface"
 	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"sync"
 )
 
@@ -78,9 +78,13 @@ func (c *Parallel) Consume(ctx context.Context, resultCh <-chan scannerdtointerf
 			}
 
 			// check the previous version as actual
-			if !c.comparator.IsEquals(cur, prev) {
+			equals, reason := c.comparator.IsEquals(cur, prev)
+			if !equals {
 				// set up new version for current page
 				cur.UpVersion(prev)
+
+				// set up the reason of pages difference
+				cur.Reason = reason
 
 				// save blinking page
 				if err = c.repository.Save(ctx, cur); err != nil {

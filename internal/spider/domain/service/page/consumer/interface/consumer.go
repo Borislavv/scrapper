@@ -3,7 +3,6 @@ package pageconsumerinterface
 import (
 	"context"
 	"errors"
-
 	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
 )
 
