@@ -2,17 +2,16 @@ package pagescanner
 
 import (
 	"context"
-	"net/http"
-	"net/url"
-	"sync"
-	"time"
-
+	logger "github.com/Borislavv/scrapper/internal/shared/domain/service/logger/interface"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	pageparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/parser/interface"
 	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
 	pagescannerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/interface"
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	scannerdto "github.com/Borislavv/scrapper/internal/spider/infrastructure/service/page/scanner/dto"
+	"net/http"
+	"net/url"
+	"sync"
+	"time"
 )
 
 type HTTP struct {
