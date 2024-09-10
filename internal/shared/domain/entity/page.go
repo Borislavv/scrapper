@@ -1,9 +1,8 @@
 package entity
 
 import (
-	"time"
-
 	"github.com/Borislavv/scrapper/internal/shared/infrastructure/vo"
+	"time"
 )
 
 type Page struct {
@@ -21,11 +20,15 @@ type Page struct {
 	FAQ map[string]string `bson:"faq"`
 	// HrefLangs is a map which contains map[rel + "_" + language] = link
 	HrefLangs map[string]string `bson:"hrefLangs"`
-	// Headers is a map of slices which contains map[headerName][][headerValue1, headerValue2, ...]
-	Headers map[string][]string `bson:"headers"`
+	// AlternateMedias is a map which contains map[rel + "_" + media] = link
+	AlternateMedias map[string]string `bson:"alternateMedias"`
 	// RelinkingBlock is a map of maps which contains map[blockTitle][anchor] = link
 	RelinkingBlock map[string]map[string]string `bson:"relinkingBlock"`
-	vo.Timestamp   `bson:",inline"`
+	// Headers is a map of slices which contains map[headerName][][headerValue1, headerValue2, ...]
+	Headers map[string][]string `bson:"headers"`
+	// Reason is a struct which contains the diff. of fields.
+	Reason       *Reason `bson:"reason,omitempty"`
+	vo.Timestamp `bson:",inline"`
 }
 
 func NewPage(url, userAgent string) *Page {
@@ -49,7 +52,7 @@ func (p *Page) GetVersion() int {
 }
 
 func (p *Page) UpVersion(previous *Page) {
-	p.Version = previous.Version + 1
+	p.Version = previous.GetVersion() + 1
 }
 
 func (p *Page) GetURL() string {
@@ -88,10 +91,18 @@ func (p *Page) GetHrefLangs() map[string]string {
 	return p.HrefLangs
 }
 
+func (p *Page) GetAlternateMedias() map[string]string {
+	return p.AlternateMedias
+}
+
 func (p *Page) GetHTML() string {
 	return p.HTML
 }
 
 func (p *Page) GetHeaders() map[string][]string {
 	return p.Headers
+}
+
+func (p *Page) GetReason() *Reason {
+	return p.Reason
 }
