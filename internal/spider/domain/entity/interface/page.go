@@ -18,7 +18,9 @@ type Page interface {
 	GetHTML() string
 	GetFAQ() map[string]string
 	GetHrefLangs() map[string]string
+	GetAlternateMedias() map[string]string
 	GetHeaders() map[string][]string
 	GetRelinkingBlock() map[string]map[string]string
+	GetReason() *entity.Reason
 	vointerface.Timestamper
 }
