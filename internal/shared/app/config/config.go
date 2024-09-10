@@ -8,7 +8,7 @@ import (
 type Config struct {
 	// LoggerLevel: info, debug, warning, error, fatal, panic.
 	LoggerLevel string `envconfig:"LOGGER_LEVEL"  default:"debug"`
-	// LoggerLevel: /dev/null/, stdout, or path to file (logs will store in the {projectRoot}/var/log dir.).
+	// LoggerLevel: /dev/null/, stdout, stderr, or filename (logs will store in the {projectRoot}/var/log dir.).
 	LoggerOutput string `envconfig:"LOGGER_OUTPUT" default:"stdout"`
 	// LoggerFormatter: text, json.
 	LoggerFormatter string `envconfig:"LOGGER_FORMAT" default:"json"`
@@ -28,6 +28,15 @@ type Config struct {
 	MongoDatabase string `envconfig:"MONGO_DATABASE" default:"spider"`
 	// MongoRequestTimeout is a timeout per request to mongodb.
 	MongoRequestTimeout time.Duration `envconfig:"MONGO_REQUEST_TIMEOUT" default:"5s"`
+
+	// InfrastructureServerName is a name of the shared server.
+	InfrastructureServerName string `envconfig:"INFRASTRUCTURE_SERVER_NAME" default:"infrastructure"`
+	// InfrastructureServerPort is a port for shared server (endpoints like a /probe for k8s).
+	InfrastructureServerPort string `envconfig:"INFRASTRUCTURE_SERVER_PORT" default:":8000"`
+	// InfrastructureServerShutDownTimeout is a duration value before the server will be closed forcefully.
+	InfrastructureServerShutDownTimeout time.Duration `envconfig:"INFRASTRUCTURE_SERVER_SHUTDOWN_TIMEOUT" default:"5s"`
+	// InfrastructureServerRequestTimeout is a timeout value for close request forcefully.
+	InfrastructureServerRequestTimeout time.Duration `envconfig:"INFRASTRUCTURE_SERVER_REQUEST_TIMEOUT" default:"1m"`
 }
 
 func Load() (*Config, error) {
@@ -72,4 +81,20 @@ func (c *Config) GetMongoPassword() string {
 
 func (c *Config) GetMongoDatabase() string {
 	return c.MongoDatabase
+}
+
+func (c *Config) GetServerName() string {
+	return c.InfrastructureServerName
+}
+
+func (c *Config) GetServerPort() string {
+	return c.InfrastructureServerPort
+}
+
+func (c *Config) GetServerShutDownTimeout() time.Duration {
+	return c.InfrastructureServerShutDownTimeout
+}
+
+func (c *Config) GetServerRequestTimeout() time.Duration {
+	return c.InfrastructureServerRequestTimeout
 }
