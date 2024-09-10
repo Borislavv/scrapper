@@ -3,12 +3,11 @@ package pageparser
 import (
 	"context"
 	"errors"
-	"net/http"
-
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	logger "github.com/Borislavv/scrapper/internal/shared/domain/service/logger/interface"
 	pageparserinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/parser/interface"
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/PuerkitoBio/goquery"
+	"net/http"
 )
 
 type HTML struct {
@@ -49,24 +48,11 @@ func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, er
 
 	// query for "title"
 	page.Title = doc.Find("title").Text()
-	if page.Title == "" {
-		p.logger.WarningMsg(ctx, pageparserinterface.EmptyTitleError.Error(), logger.Fields{
-			"url":       resp.Request.URL.String(),
-			"userAgent": resp.Request.UserAgent(),
-			"selector":  "title",
-		})
-	}
 
 	// query for "description"
 	description, descriptionExists := doc.Find("meta[name='description']").Attr("content")
 	if !descriptionExists {
 		p.logger.WarningMsg(ctx, pageparserinterface.NotExistsDescriptionError.Error(), logger.Fields{
-			"url":       resp.Request.URL.String(),
-			"userAgent": resp.Request.UserAgent(),
-			"selector":  "meta[name='description.content",
-		})
-	} else if description == "" {
-		p.logger.WarningMsg(ctx, pageparserinterface.EmptyDescriptionError.Error(), logger.Fields{
 			"url":       resp.Request.URL.String(),
 			"userAgent": resp.Request.UserAgent(),
 			"selector":  "meta[name='description.content",
@@ -82,24 +68,11 @@ func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, er
 			"userAgent": resp.Request.UserAgent(),
 			"selector":  "link[rel='canonical'].href",
 		})
-	} else if canonical == "" {
-		p.logger.WarningMsg(ctx, pageparserinterface.EmptyCanonicalError.Error(), logger.Fields{
-			"url":       resp.Request.URL.String(),
-			"userAgent": resp.Request.UserAgent(),
-			"selector":  "link[rel='canonical'].href",
-		})
 	}
 	page.Canonical = canonical
 
 	// query for "H1"
 	page.H1 = doc.Find("h1").First().Text()
-	if page.H1 == "" {
-		p.logger.WarningMsg(ctx, pageparserinterface.EmptyH1Error.Error(), logger.Fields{
-			"url":       resp.Request.URL.String(),
-			"userAgent": resp.Request.UserAgent(),
-			"selector":  "h1",
-		})
-	}
 
 	// query for "plaintext" (content)
 	plaintext, err := doc.Find(".seo-text").Html()
@@ -114,22 +87,22 @@ func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, er
 	page.PlainText = plaintext
 
 	// query for "hreflang"
-	links := doc.Find("link[hreflang]")
-	hreflangMap := make(map[string]string, links.Length())
-	links.Each(func(index int, item *goquery.Selection) {
+	hreflangLinks := doc.Find("link[rel='alternate'][hreflang]")
+	hreflangMap := make(map[string]string, hreflangLinks.Length())
+	hreflangLinks.Each(func(index int, item *goquery.Selection) {
 		link, linkExists := item.Attr("href")
 		if !linkExists {
 			p.logger.WarningMsg(ctx, pageparserinterface.NotExistsHrefLangHrefError.Error(), logger.Fields{
 				"url":       resp.Request.URL.String(),
 				"userAgent": resp.Request.UserAgent(),
-				"selector":  "link[hreflang][].href",
+				"selector":  "link[rel='alternate'][hreflang][].href",
 			})
 			return
 		} else if link == "" {
 			p.logger.WarningMsg(ctx, pageparserinterface.EmptyHrefLangLinkError.Error(), logger.Fields{
 				"url":       resp.Request.URL.String(),
 				"userAgent": resp.Request.UserAgent(),
-				"selector":  "link[hreflang][].href",
+				"selector":  "link[rel='alternate'][hreflang][].href",
 			})
 			return
 		}
@@ -139,14 +112,14 @@ func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, er
 			p.logger.WarningMsg(ctx, pageparserinterface.NotExistsHrefLangRelError.Error(), logger.Fields{
 				"url":       resp.Request.URL.String(),
 				"userAgent": resp.Request.UserAgent(),
-				"selector":  "link[hreflang][].rel",
+				"selector":  "link[rel='alternate'][hreflang][].rel",
 			})
 			return
 		} else if rel == "" {
 			p.logger.WarningMsg(ctx, pageparserinterface.EmptyHrefLangRelError.Error(), logger.Fields{
 				"url":       resp.Request.URL.String(),
 				"userAgent": resp.Request.UserAgent(),
-				"selector":  "link[hreflang][].rel",
+				"selector":  "link[rel='alternate'][hreflang][].rel",
 			})
 			return
 		}
@@ -156,14 +129,14 @@ func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, er
 			p.logger.WarningMsg(ctx, pageparserinterface.NotExistsHrefLangError.Error(), logger.Fields{
 				"url":       resp.Request.URL.String(),
 				"userAgent": resp.Request.UserAgent(),
-				"selector":  "link[hreflang][].hreflang",
+				"selector":  "link[rel='alternate'][hreflang][].hreflang",
 			})
 			return
 		} else if language == "" {
 			p.logger.WarningMsg(ctx, pageparserinterface.EmptyHrefLangError.Error(), logger.Fields{
 				"url":       resp.Request.URL.String(),
 				"userAgent": resp.Request.UserAgent(),
-				"selector":  "link[hreflang][].hreflang",
+				"selector":  "link[rel='alternate'][hreflang][].hreflang",
 			})
 			return
 		}
@@ -172,19 +145,69 @@ func (p *HTML) Parse(ctx context.Context, resp *http.Response) (*entity.Page, er
 	})
 	page.HrefLangs = hreflangMap
 
+	// query for "alternateMedia"
+	alternateMediaLinks := doc.Find("link[rel='alternate'][media]")
+	alternateMediaMap := make(map[string]string, alternateMediaLinks.Length())
+	alternateMediaLinks.Each(func(i int, item *goquery.Selection) {
+		link, linkExists := item.Attr("href")
+		if !linkExists {
+			p.logger.WarningMsg(ctx, pageparserinterface.NotExistsAlternateMediaHrefError.Error(), logger.Fields{
+				"url":       resp.Request.URL.String(),
+				"userAgent": resp.Request.UserAgent(),
+				"selector":  "link[rel='alternate'][media][].href",
+			})
+			return
+		} else if link == "" {
+			p.logger.WarningMsg(ctx, pageparserinterface.EmptyAlternateMediaLinkError.Error(), logger.Fields{
+				"url":       resp.Request.URL.String(),
+				"userAgent": resp.Request.UserAgent(),
+				"selector":  "link[rel='alternate'][media][].href",
+			})
+			return
+		}
+
+		rel, existsRel := item.Attr("rel")
+		if !existsRel {
+			p.logger.WarningMsg(ctx, pageparserinterface.NotExistsAlternateMediaRelError.Error(), logger.Fields{
+				"url":       resp.Request.URL.String(),
+				"userAgent": resp.Request.UserAgent(),
+				"selector":  "link[rel='alternate'][media][].rel",
+			})
+			return
+		} else if rel == "" {
+			p.logger.WarningMsg(ctx, pageparserinterface.EmptyAlternateMediaRelError.Error(), logger.Fields{
+				"url":       resp.Request.URL.String(),
+				"userAgent": resp.Request.UserAgent(),
+				"selector":  "link[rel='alternate'][media][].rel",
+			})
+			return
+		}
+
+		media, exists := item.Attr("media")
+		if !exists {
+			p.logger.WarningMsg(ctx, pageparserinterface.NotExistsAlternateMediaError.Error(), logger.Fields{
+				"url":       resp.Request.URL.String(),
+				"userAgent": resp.Request.UserAgent(),
+				"selector":  "link[rel='alternate'][media][].media",
+			})
+			return
+		} else if media == "" {
+			p.logger.WarningMsg(ctx, pageparserinterface.EmptyAlternateMediaError.Error(), logger.Fields{
+				"url":       resp.Request.URL.String(),
+				"userAgent": resp.Request.UserAgent(),
+				"selector":  "link[rel='alternate'][media][].hreflang",
+			})
+			return
+		}
+
+		alternateMediaMap[rel+"_"+media] = link
+	})
+	page.AlternateMedias = alternateMediaMap
+
 	// query for "relinkingBlock"
 	relinkingMap := make(map[string]map[string]string, 3)
 	doc.Find("div.seo-list-section").Each(func(i int, section *goquery.Selection) {
 		blockTitle := section.Find(".seo-list-section__title").Text()
-		if blockTitle == "" {
-			p.logger.WarningMsg(ctx, pageparserinterface.EmptyRelinkingBlockNameError.Error(), logger.Fields{
-				"url":       resp.Request.URL.String(),
-				"userAgent": resp.Request.UserAgent(),
-				"block":     blockTitle,
-				"selector":  "div.seo-list-section[].seo-list-section__title",
-			})
-		}
-
 		relinkingLinks := section.Find("li.seo-list-links__item")
 
 		relinkingMap[blockTitle] = make(map[string]string, relinkingLinks.Length())
