@@ -28,4 +28,6 @@ RUN go mod download
 
 COPY . .
 
+EXPOSE 8000
+
 ENTRYPOINT ["go", "run", "./cmd/main.go"]
