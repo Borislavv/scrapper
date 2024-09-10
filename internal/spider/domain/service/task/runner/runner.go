@@ -2,13 +2,12 @@ package taskrunner
 
 import (
 	"context"
-	"net/url"
-	"sync"
-
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	pageconsumerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/consumer/interface"
 	pageproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/provider/interface"
 	scannerdtointerface "github.com/Borislavv/scrapper/internal/spider/domain/service/page/scanner/dto/interface"
+	"net/url"
+	"sync"
 )
 
 type Runner struct {
