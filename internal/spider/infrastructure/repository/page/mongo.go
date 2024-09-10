@@ -3,16 +3,15 @@ package pagerepository
 import (
 	"context"
 	"errors"
-	"time"
-
 	"github.com/Borislavv/scrapper/internal/shared/domain/entity"
+	logger "github.com/Borislavv/scrapper/internal/shared/domain/service/logger/interface"
 	spiderconfiginterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	pagerepositoryinterface "github.com/Borislavv/scrapper/internal/spider/domain/repository/interface"
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 type Mongo struct {
