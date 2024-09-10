@@ -1,15 +1,15 @@
 version: '3.8'
 
 services:
-  spider:
+  spider_app:
     build:
       context: .
       dockerfile: .ops/docker/go/dev/Dockerfile
-    container_name: spider
+    container_name: spider_app
     volumes:
       - .:/app
     depends_on:
-      - mongodb
+      - mongo_db
     platform: linux/amd64
     ports:
       - "8000:8000"
@@ -20,7 +20,7 @@ services:
       LOGGER_FORMAT: "json"
       LOGGER_CONTEXT_EXTRA_FIELD: "jobId,taskId"
       # Mongodb
-      MONGO_HOST: "mongodb"
+      MONGO_HOST: "mongo_db"
       MONGO_PORT: "27017"
       MONGO_LOGIN: "spider"
       MONGO_PASSWORD: "spider"
@@ -43,9 +43,9 @@ services:
       INFRASTRUCTURE_SERVER_SHUTDOWN_TIMEOUT: "5s"
       INFRASTRUCTURE_SERVER_REQUEST_TIMEOUT: "1m"
 
-  mongodb:
+  mongo_db:
     image: bitnami/mongodb:7.0.5
-    container_name: mongodb
+    container_name: mongo_db
     ports:
       - "27018:27017"
     volumes:
