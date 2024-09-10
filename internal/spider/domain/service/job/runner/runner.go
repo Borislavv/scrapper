@@ -3,10 +3,10 @@ package jobrunner
 import (
 	"context"
 	"github.com/Borislavv/scrapper/internal/shared/domain/enum/ctx"
+	logger "github.com/Borislavv/scrapper/internal/shared/domain/service/logger/interface"
 	spiderinterface "github.com/Borislavv/scrapper/internal/spider/app/config/interface"
 	taskconsumerinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/consumer/interface"
 	taskproviderinterface "github.com/Borislavv/scrapper/internal/spider/domain/service/task/provider/interface"
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/google/uuid"
 )
 
