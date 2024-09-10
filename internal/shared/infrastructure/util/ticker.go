@@ -18,6 +18,7 @@ func NewTicker(ctx context.Context, interval time.Duration) (ch <-chan time.Time
 		for {
 			select {
 			case <-ctx.Done():
+				close(tickCh)
 				return
 			case t := <-ticker.C:
 				tickCh <- t
