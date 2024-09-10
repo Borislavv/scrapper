@@ -2,11 +2,10 @@ package loggerdto
 
 import (
 	"context"
+	logger "github.com/Borislavv/scrapper/internal/shared/domain/service/logger/interface"
+	"github.com/sirupsen/logrus"
 	"runtime"
 	"strings"
-
-	logger "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
-	"github.com/sirupsen/logrus"
 )
 
 type MsgDto struct {

@@ -3,10 +3,11 @@ package logger
 import (
 	"context"
 	sharedconfiginterface "github.com/Borislavv/scrapper/internal/shared/app/config/interface"
+	loggerinterface "github.com/Borislavv/scrapper/internal/shared/domain/service/logger/interface"
+	sharedloggerinterface "github.com/Borislavv/scrapper/internal/shared/infrastructure/logger/config/interface"
 	loggerdto "github.com/Borislavv/scrapper/internal/shared/infrastructure/logger/dto"
 	loggerenum "github.com/Borislavv/scrapper/internal/shared/infrastructure/logger/enum"
 	"github.com/Borislavv/scrapper/internal/shared/infrastructure/util"
-	loggerinterface "github.com/Borislavv/scrapper/internal/spider/infrastructure/logger/interface"
 	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
@@ -14,43 +15,53 @@ import (
 )
 
 type Logrus struct {
-	wg                 *sync.WaitGroup
 	logger             *logrus.Logger
 	contextExtraFields []string
 	msgCh              chan *loggerdto.MsgDto
 	errCh              chan *loggerdto.ErrDto
 }
 
-func NewLogrus(cfg sharedconfiginterface.Configurator) (logger *Logrus, cancel loggerinterface.CancelFunc, err error) {
+func NewOutput(cfg sharedconfiginterface.Configurator) (out *os.File, cancel func(), err error) {
+	out, err = output(cfg.GetLoggerOutput())
+	if err != nil {
+		return nil, nil, err
+	}
+	return out, func() {
+		_ = out.Close()
+	}, err
+}
+
+func NewLogrus(
+	cfg sharedloggerinterface.Configurator,
+	output loggerinterface.Outputer,
+) (
+	logger *Logrus,
+	cancel loggerinterface.CancelFunc,
+	err error,
+) {
 	l := &Logrus{logger: logrus.New(), contextExtraFields: cfg.GetLoggerContextExtraFields()}
 
 	l.logger.SetLevel(l.getLevel(cfg.GetLoggerLevel()))
 	l.logger.SetFormatter(l.getFormat(cfg.GetLoggerFormatter()))
-
-	output, err := l.getOutput(cfg.GetLoggerOutput())
-	if err != nil {
-		return nil, nil, err
-	}
 	l.logger.SetOutput(output)
 
 	l.msgCh = make(chan *loggerdto.MsgDto, 1)
 	l.errCh = make(chan *loggerdto.ErrDto, 1)
 
-	l.wg = &sync.WaitGroup{}
-	l.wg.Add(2)
-	go l.handleErrors()
-	go l.handleMessages()
+	wg := &sync.WaitGroup{}
+	wg.Add(2)
+	go l.handleErrors(wg)
+	go l.handleMessages(wg)
 
 	return l, func() {
 		close(l.msgCh)
 		close(l.errCh)
-		l.wg.Wait()
-		_ = output.Close()
+		wg.Wait()
 	}, nil
 }
 
-func (l *Logrus) handleErrors() {
-	defer l.wg.Done()
+func (l *Logrus) handleErrors(wg *sync.WaitGroup) {
+	defer wg.Done()
 	for err := range l.errCh {
 		l.logger.
 			WithFields(err.Fields).
@@ -60,8 +71,8 @@ func (l *Logrus) handleErrors() {
 	}
 }
 
-func (l *Logrus) handleMessages() {
-	defer l.wg.Done()
+func (l *Logrus) handleMessages(wg *sync.WaitGroup) {
+	defer wg.Done()
 	for msg := range l.msgCh {
 		l.logger.
 			WithFields(msg.Fields).
@@ -137,16 +148,18 @@ func (l *Logrus) fieldsFromContext(ctx context.Context) logrus.Fields {
 	return fields
 }
 
-func (l *Logrus) getOutput(output string) (*os.File, error) {
+func output(output string) (*os.File, error) {
 	if output == loggerenum.Stdout {
 		return os.Stdout, nil
+	} else if output == loggerenum.Stderr {
+		return os.Stderr, nil
 	}
 
 	path := ""
 	if output == "" {
 		path = loggerenum.DevNull
 	} else {
-		fpath, err := util.Path(output)
+		fpath, err := util.LogsPath(output)
 		if err != nil {
 			return nil, err
 		}
